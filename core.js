@@ -144,7 +144,7 @@ G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 while(G.S.plots.length<G.CFG.plots)G.S.plots.push(null);
 if(G.S.plots.length>G.CFG.plots)G.S.plots=G.S.plots.slice(0,G.CFG.plots); // migrate if reduced
-G.ui={zone:'farm',seed:'nep',held:null,modal:null,hotbar:[null,null,null,null,null,null,null,null]};
+G.ui={zone:'farm',seed:'nep',held:null,modal:null,sel:null,hotbar:['hat_nep','hat_dau_xanh','hat_hanh',null,null,null,null,null]};
 // Trang bị nhanh 8 ô (Stardew-style)
 G.hold=id=>{
   if(!id){G.ui.held=null;return}
@@ -156,15 +156,23 @@ G.hold=id=>{
   G.msg('Đang cầm: '+(G.ITEMS[id]?.n||id));
 };
 G.unhold=()=>{G.ui.held=null};
+// Gắn vật phẩm vào ô nhanh i. Nếu vật phẩm đang ở ô khác thì 2 ô hoán đổi; ô đích có đồ khác thì đồ đó rời thanh nhanh (vẫn còn trong túi).
+G.putHot=(i,id)=>{const hb=G.ui.hotbar,j=hb.indexOf(id),old=hb[i];
+  if(j===i){G.msg('Đã ở ô '+(i+1));return}
+  if(j>=0){hb[j]=old;hb[i]=id;G.msg(old?`Hoán đổi ô ${j+1} ↔ ô ${i+1}`:`Chuyển sang ô ${i+1}`)}
+  else{hb[i]=id;G.msg(`Gắn ô ${i+1}: ${G.ITEMS[id]?.n||id}`)}};
 G.setHot=i=>{const id=G.ui.hotbar[i];if(id)G.hold(id);else G.unhold()};
 // Tự xếp vật phẩm vào hotbar khi nhặt (ô trống)
 G.fillHot=()=>{
-  if(!Array.isArray(G.ui.hotbar)) G.ui.hotbar=[];
-  while(G.ui.hotbar.length<8) G.ui.hotbar.push(null);
-  if(G.ui.hotbar.length>8) G.ui.hotbar.length=8;
+  const hb=G.ui.hotbar;
+  Object.keys(G.S.inv).forEach(id=>{
+    if(hb.includes(id))return;
+    const empty=hb.findIndex(x=>!x);
+    if(empty>=0)hb[empty]=id;
+  });
 };
 G.save=()=>{try{localStorage[G.KEY]=JSON.stringify(G.S)}catch(e){}};
-G.reset=()=>{G.S=G.fresh();G.ui.hotbar=[null,null,null,null,null,null,null,null];G.ui.held=null;G.save()};
+G.reset=()=>{G.S=G.fresh();G.save()};
 G.has=(id,n=1)=>(G.S.inv[id]||0)>=n;
 G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0)delete G.S.inv[id]};
 
