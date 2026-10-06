@@ -25,7 +25,7 @@ G.RECIPES = { // need: nguyên liệu, time: giây nấu, price: giá bán
 for(const k in G.RECIPES)G.ITEMS[k]={n:G.RECIPES[k].n,e:G.RECIPES[k].e,sell:Math.floor(G.RECIPES[k].price*.6)};
 G.CFG = {plots:60,maxAnimals:8,maxCustomers:5,customerEvery:8,patience:50,startMoney:80,
   // world size per zone (larger than canvas for camera follow)
-  world:{farm:{w:520,h:300},market:{w:420,h:240},kitchen:{w:400,h:230},shop:{w:400,h:230},hub:{w:520,h:300},pets:{w:400,h:230}}};
+  world:{farm:{w:520,h:300},market:{w:420,h:240},kitchen:{w:400,h:230},shop:{w:400,h:230},hub:{w:640,h:360},pets:{w:400,h:230}}};
 G.ASSETS={
   house_red:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAu5JREFUeJztm89rGkEUx7+GtBehIGiViqdCoFAWCgmtkHgITf6AXPInCOle9tyz573Ygn9CoPQPaCWUNCUpWyhIQAj0JG1dEiiUevJgD3HMur8cx12fszufm/Nmd958nZ15+3xm4CBf0kZICTf9TgYAMqwhX9JGrWKRzqMlU7dt3PQ7mXVqR6KgbtuBtllfqvQC1G0bptkMtht6qAjSC8AwDB1Pn+1NPl9+/xgqDCMxAgC3k56XtRj8kIrErACe5e5HIgT4ctEVvlY9AtQOLEqrWAQ+vQu0780TB4QFFEllHbgNg19vPYFWyVL7szQ6vQEaFkap3wOUANQOUDPZBLVKFrsvH1D6slzaACyHAG++/kCnVyL0aLl8/tUHoB6B6TigYYmHlLJRK+cAjFNiLBfolzio23ZoQkFWOwv61oC7BGHa8OQEqw//eTq1UPRtl94+jvpTvwkqAagdoEYJQO0ANUoAageoUQJQO0CNEoDaAWqUANQOUKMEoHaAmqkiqWvjnqdDwRzCr112e8EcehMiv9v3fW4xDGiX3T4E4FgBgH+dYK2cw+nPP4G3l9XuqRME7n4kTToNqzsRQG2C7oZ8SRuxnHnY0pIN55ycWXDfCpFXzx8DAHZ6AzSsrnAB0ipgGDqctQ+n779N2VP/CHDXCG1XNwAAWy/2Y3MGAKyLD5Hd6+z8amYfoSKp67e7IpfNpHB04mk7O7+CYegzrzXN5uRLmoeVrxIzDJ1L8MKRLrR6hAQ4af8VuUyYOMebWwDTbOJwvLNG9XM6u1fYaXPo2r2dHB9sCo8tfApolexCAzOODzZJy/NSfwwqAagdoGblj0FGrZzDziNvFRur9hJFGgHY+4kbreLfzsvKC8COXZ5+Iqy8ANvVDa7JiYTBgAQCAOKT4yEWAZz/33Mi8re2uOESgOdtjBE0eWYLE2GecaKCSwB3yBsUl4dN3tknSIQoQms3Ye8QAIcAtXIOnd7A0+bHIkvcb5woCPKV8R+4dCHhyY0x/wAAAABJRU5ErkJggg==",
   house_blue:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAuZJREFUeJztmzFr20AUx/8O3gwFgwKixnQomAaKoBDTpjgeQtupU5Z8h1SL5syetbj9DoHSD9CEDGlKUlQImIKLoYMRLYIGCgXP6uCcK1k6+XyR/XSSfpN9T7p799fp7t35uYIAmm74KAg33qACAFVWoOmGrzcf0Hm0fvwbb1CpLr4u+3jumGtb9FCVF8Bzx7DtPtduWWaiCMoLwLAsE4+fvJx9/3Z9kigMIzcCANNOL8vGCvxQityMAJHhHkcuBPh8NZS+t/CvQIV9KFog5LljRAKhpIAir1SB6dM/am/BaNao/VkbA3eCngO/8HNAKQC1A9TMJkGjWcPei3uUvqyXUwBOQIC3X35g4OqEHq2XT788AOUrEA6Fe458SKka3UYdwG0kyM4C4yJBzx0nHiioamdB3wbw/4CwaERCYU1rxV7IK1fZHhoBRaYUgNoBakoBqB2gphSA2gFqSgGoHaCmFIDaAWpKAagdoKYUgNoBakLnAY9a0X3z++sTdJ6/5lagqp0lU4QE+D4axVbCK8+DPXQUFpcn2G3Ucf7zD7cCVe3sGDAiwFF7i1tZXug5w5kAhZ8EI6fBmm747Mw8aWipRrBPwVPw2ByhN08fAgB23Ql6zlA6ASkLWJaJYO7D+YevIXvhXwHhLLHOzjRGaD97tTJnAMC5+phaXReXycsjIJkm9/vdnsxtC9k8PIuUXVyOYFnmwnttuz97SMuQ+TxByzKFBN88NKVGj5QAZ6d/ZW6TZpXtLS2AbfdxcDuzpvVzOqsrabU5mJu9gxzvb0u3Lb0KGM3anRpmHO9vk6bnFX4ZLAWgdoCazC+DjG6jjt370Sw2lu0lizICsP3JPEYzvlyUzAvAll2R62TIvACdnZZQ52TCYEABAQD5zomwEgGC/98LIvO3tlUjJIDIbozB6zyzJYmwTDtpISTAfMjLi8uTOh+8hidCGqH1PEl7CEBAgG6jjoE7iZTFcZchHtdOGvB8ZfwDdlcVM4YpSDsAAAAASUVORK5CYII=",
@@ -144,7 +144,7 @@ G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 while(G.S.plots.length<G.CFG.plots)G.S.plots.push(null);
 if(G.S.plots.length>G.CFG.plots)G.S.plots=G.S.plots.slice(0,G.CFG.plots); // migrate if reduced
-G.ui={zone:'farm',seed:'nep',held:null,modal:null,hotbar:['hat_nep','hat_dau_xanh','hat_hanh','hat_dua','cam','trung','sua','muoi']};
+G.ui={zone:'farm',seed:'nep',held:null,modal:null,hotbar:[null,null,null,null,null,null,null,null]};
 // Trang bị nhanh 8 ô (Stardew-style)
 G.hold=id=>{
   if(!id){G.ui.held=null;return}
@@ -159,15 +159,12 @@ G.unhold=()=>{G.ui.held=null};
 G.setHot=i=>{const id=G.ui.hotbar[i];if(id)G.hold(id);else G.unhold()};
 // Tự xếp vật phẩm vào hotbar khi nhặt (ô trống)
 G.fillHot=()=>{
-  const hb=G.ui.hotbar;
-  Object.keys(G.S.inv).forEach(id=>{
-    if(hb.includes(id))return;
-    const empty=hb.findIndex(x=>!x);
-    if(empty>=0)hb[empty]=id;
-  });
+  if(!Array.isArray(G.ui.hotbar)) G.ui.hotbar=[];
+  while(G.ui.hotbar.length<8) G.ui.hotbar.push(null);
+  if(G.ui.hotbar.length>8) G.ui.hotbar.length=8;
 };
 G.save=()=>{try{localStorage[G.KEY]=JSON.stringify(G.S)}catch(e){}};
-G.reset=()=>{G.S=G.fresh();G.save()};
+G.reset=()=>{G.S=G.fresh();G.ui.hotbar=[null,null,null,null,null,null,null,null];G.ui.held=null;G.save()};
 G.has=(id,n=1)=>(G.S.inv[id]||0)>=n;
 G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0)delete G.S.inv[id]};
 
@@ -243,8 +240,8 @@ G.draw=t=>{G.hot=[];G.updateCam();const zn=G.ui.zone,z=G.zones[zn],cam=G.cam;
 // NHÂN VẬT: chạm đâu đi đó, hoạt ảnh làm việc (cuốc đất, cho ăn, khuấy nồi, bưng món), hạt bụi, chữ bay
 G.P={x:192,y:170,tx:192,ty:170,dir:'d',st:'idle',wt:0,wd:.7,wa:'dig',task:null,lt:0};
 G.fx=[];G.fl=[];G.mk=null;
-const BND={farm:[10,20,500,280],market:[8,20,410,220],kitchen:[10,20,390,210],shop:[10,20,390,210],hub:[10,20,500,280],pets:[10,20,390,210]};
-const START={farm:[200,200],market:[200,160],kitchen:[200,180],shop:[200,160],hub:[80,160],pets:[200,160]};
+const BND={farm:[10,20,500,280],market:[8,20,410,220],kitchen:[10,20,390,210],shop:[10,20,390,210],hub:[12,24,620,340],pets:[10,20,390,210]};
+const START={farm:[200,200],market:[200,160],kitchen:[200,180],shop:[200,160],hub:[300,190],pets:[200,160]};
 G.P.enter=z=>{const s=START[z]||[W/2,H/2];Object.assign(G.P,{x:s[0],y:s[1],tx:s[0],ty:s[1],st:'idle',task:null,dir:'d'});G.updateCam()};
 // Đi bộ tới POI rồi chuyển khu (không tele ngay)
 // ===== DI CHUYỂN & POI =====
@@ -257,16 +254,63 @@ G.goZone=zone=>{
 };
 // Đi bộ tới (sx,sy) rồi đổi map
 G.travelTo=(zone,sx,sy)=>G.P.go(sx,sy,()=>G.goZone(zone));
-// Biển POI: bấm → đi tới biển → vào zone (không animation work)
+// Cổng pixel: bấm → đi tới cửa → vào zone. Không còn biển chữ.
+function roof(x,y,w,c){R(x,y,w,4,c);R(x+2,y-3,w-4,3,c);R(x+5,y-5,w-10,2,'#f2d9a0')}
+function gateFarm(x,y){
+  R(x-20,y-8,40,8,'#6fae4e');R(x-16,y-12,10,5,'#e8d27a');R(x+4,y-11,12,5,'#7ec85e');
+  R(x-24,y-34,5,34,'#5a3a20');R(x+19,y-34,5,34,'#5a3a20');
+  R(x-26,y-38,52,5,'#c4a06a');R(x-20,y-42,40,4,'#d8b56a');R(x-14,y-45,28,3,'#e8c878');
+  R(x-19,y-26,38,3,'#8b5a2b');R(x-19,y-16,38,3,'#8b5a2b');
+  R(x-6,y-24,3,16,'#a07040');R(x+3,y-24,3,16,'#a07040');
+}
+function gateMarket(x,y){
+  R(x-26,y-32,5,32,'#6b3a22');R(x+21,y-32,5,32,'#6b3a22');
+  R(x-28,y-36,56,4,'#8b5a2b');
+  for(let i=0;i<7;i++)R(x-26+i*8,y-44,8,8,i%2?'#fffaf0':'#c8462e');
+  R(x-22,y-18,12,8,'#c4a06a');R(x-20,y-22,8,5,'#6fae4e');
+  R(x+6,y-16,14,8,'#a07040');R(x+8,y-20,10,5,'#e8d27a');
+  R(x-4,y-14,8,6,'#d9a066');
+}
+function gateShop(x,y){
+  R(x-24,y-6,48,6,'#c4a06a');
+  R(x-20,y-28,4,22,'#5a3a20');R(x+16,y-28,4,22,'#5a3a20');
+  R(x-26,y-32,52,5,'#c8462e');R(x-20,y-36,40,4,'#e86848');R(x-12,y-39,24,3,'#f2d04a');
+  R(x-10,y-22,20,8,'#d0d4d8');R(x-8,y-26,16,5,'#e8d27a');R(x-6,y-28,12,3,'#fffaf0');
+  R(x-22,y-14,8,6,'#3f9a4a');
+}
+function gatePets(x,y){
+  for(let i=-3;i<=3;i++){R(x+i*8,y-16,3,16,'#c4a06a');R(x+i*8-1,y-18,5,3,'#8b5a2b')}
+  R(x-26,y-20,52,3,'#8b5a2b');
+  R(x-8,y-15,3,15,'#6b4423');R(x+5,y-15,3,15,'#6b4423');
+  R(x-14,y-28,10,8,'#f2d04a');R(x-12,y-30,4,3,'#c8462e');
+  R(x+10,y-12,10,6,'#d9a066');R(x+16,y-16,4,4,'#d9a066');
+}
+function gateVillage(x,y){
+  R(x-16,y-30,4,30,'#5a3a20');R(x+12,y-30,4,30,'#5a3a20');
+  R(x-18,y-33,36,4,'#8b5a2b');R(x-12,y-37,24,4,'#3f9a4a');
+  R(x-10,y-30,6,8,'#7bc653');R(x+4,y-28,5,7,'#4a9a3c');
+}
 G.drawPOI=(x,y,label,zone,sx,sy,big=0)=>{
-  const w=big?52:30,h=big?20:14;
-  const tx=sx!=null?sx:x, ty=sy!=null?sy:y+8;
-  R(x-2,y-16,4,20,'#5a3a20');
-  R(x-w/2-2,y-34,w+4,h+4,'#2a1a10');
-  R(x-w/2,y-32,w,h,'#fffaf0');
-  TS(label,x,y-32+h-2,'#c8462e',big?10:8);
-  HOT(x-w/2-4,y-36,w+8,44,()=>G.goZone(zone),{sx:tx,sy:ty});
+  const tx=sx!=null?sx:x, ty=sy!=null?sy:y+10;
+  const kind={farm:'farm',market:'market',shop:'shop',pets:'pets',hub:'village',kitchen:'farm'}[zone]||'village';
+  if(kind==='farm')gateFarm(x,y);
+  else if(kind==='market')gateMarket(x,y);
+  else if(kind==='shop')gateShop(x,y);
+  else if(kind==='pets')gatePets(x,y);
+  else gateVillage(x,y);
+  const w=kind==='village'?40:60, h=kind==='village'?42:52;
+  HOT(x-w/2,y-h+6,w,h,()=>G.goZone(zone),{sx:tx,sy:ty});
 };
+// Cửa gỗ trong nhà (bếp / quán) — không dùng cổng ngoài trời
+G.drawDoor=(x,y,zone,sx,sy)=>{
+  R(x-14,y-36,28,36,'#2a1a10');
+  R(x-12,y-34,24,32,'#8b5a2b');
+  R(x-10,y-30,9,24,'#a07040');R(x+1,y-30,9,24,'#c4a06a');
+  R(x-2,y-18,3,3,'#f2d04a');
+  R(x-16,y-38,32,4,'#5a3a20');
+  HOT(x-16,y-40,32,42,()=>G.goZone(zone),{sx:sx??x,sy:sy??y+4});
+};
+
 G.P.go=(x,y,done)=>{
   const b=BND[G.ui.zone]||[10,20,W-10,H-10],p=G.P;
   p.tx=Math.max(b[0],Math.min(b[2],x));
