@@ -29,6 +29,6 @@ Z.market={bg:mkBg(b=>{
     HOT(x,y-26,80,88,()=>{G.ui.modal=s.id;G.refreshUI()},{sx:x+40,sy:y+70,anim:'shop',dur:.4});
   });
   palm(18,196,t);palm(390,196,t+240);
-  G.drawPOI(70,188,'','hub',70,188,1);
+  G.drawPOI(210,198,'Về làng','hub',210,188);
   G.P.draw(t);
 }};

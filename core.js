@@ -265,49 +265,43 @@ G.goZone=zone=>{
 G.travelTo=(zone,sx,sy)=>G.P.go(sx,sy,()=>G.goZone(zone));
 // Cổng pixel: bấm → đi tới cửa → vào zone. Không còn biển chữ.
 function roof(x,y,w,c){R(x,y,w,4,c);R(x+2,y-3,w-4,3,c);R(x+5,y-5,w-10,2,'#f2d9a0')}
-function gateFarm(x,y){const b=cx;
-  A.bush(b,x-36,y-14,'#4a9a3c');A.bush(b,x+16,y-14,'#5fb04a');
-  blk(b,x-24,y-34,6,34,'#8b5a2b');blk(b,x+18,y-34,6,34,'#8b5a2b');
-  blk(b,x-28,y-42,56,8,'#c4a06a');blk(b,x-20,y-48,40,7,'#d8b56a');
-  for(let i=0;i<8;i++)rr(b,x-24+i*6,y-40,1,5,'#a8844a');
-  rr(b,x-18,y-28,36,3,'#8b5a2b');
-  blk(b,x-10,y-26,20,13,'#a8733a');orb(b,x-4,y-20,3,'#6fae4e');orb(b,x+4,y-20,3,'#e8d27a');
-}
-function gateMarket(x,y){const b=cx;
-  A.crate(b,x-26,y-12,14,12);A.basket(b,x+10,y-14,'#e8483a');
-  blk(b,x-26,y-34,5,34,'#8b5a2b');blk(b,x+21,y-34,5,34,'#8b5a2b');
-  for(let i=0;i<7;i++)blk(b,x-28+i*8,y-46,9,12,i%2?'#fffaf0':'#d8402e');
-  for(let i=0;i<7;i++)rr(b,x-27+i*8,y-34,7,2,i%2?'#fffaf0':'#d8402e');
-  A.lantern(b,x-14,y-30,'#d8402e');A.lantern(b,x+8,y-30,'#f2a82a');
-}
-function gateShop(x,y){const b=cx;
-  blk(b,x-22,y-8,44,8,'#c4a06a');
-  blk(b,x-20,y-30,5,24,'#6b3a22');blk(b,x+15,y-30,5,24,'#6b3a22');
-  blk(b,x-28,y-36,56,6,'#d8402e');blk(b,x-22,y-42,44,6,'#e86848');blk(b,x-14,y-47,28,6,'#f2c23a');
-  blk(b,x-9,y-26,18,12,'#fff6e4');rr(b,x-6,y-22,12,4,'#c0c8d0');rr(b,x-5,y-24,10,2,'#e8d27a');
-  rr(b,x-3,y-30,1,3,'#fff8');rr(b,x+2,y-31,1,4,'#fff8');
-  A.pot(b,x-26,y-16,'#3b8a8a');
-}
-function gatePets(x,y){const b=cx;
-  A.fence(b,x-28,y-16,7);
-  blk(b,x-8,y-30,16,16,'#f6ecd2');orb(b,x-1,y-22,5,'#f6d04a');rr(b,x+3,y-23,3,2,'#e8863a');rr(b,x+1,y-24,1,1,OL);
-  A.bush(b,x+18,y-14,'#5fb04a');A.flower(b,x-34,y-6,'#f1a0b0');
-}
-function gateVillage(x,y){const b=cx;
-  blk(b,x-16,y-32,5,32,'#8b5a2b');blk(b,x+11,y-32,5,32,'#8b5a2b');
-  blk(b,x-20,y-40,40,8,'#c4a06a');orb(b,x-10,y-38,4,'#4a9a3c');orb(b,x+8,y-38,4,'#5fb04a');A.flower(b,x-6,y-8,'#f6b0c0');
-}
-G.drawPOI=(x,y,label,zone,sx,sy,big=0)=>{
-  const tx=sx!=null?sx:x, ty=sy!=null?sy:y+10;
-  const kind={farm:'farm',market:'market',shop:'shop',pets:'pets',hub:'village',kitchen:'farm'}[zone]||'village';
-  if(kind==='farm')gateFarm(x,y);
-  else if(kind==='market')gateMarket(x,y);
-  else if(kind==='shop')gateShop(x,y);
-  else if(kind==='pets')gatePets(x,y);
-  else gateVillage(x,y);
-  const w=kind==='village'?40:60, h=kind==='village'?42:52;
-  HOT(x-w/2,y-h+6,w,h,()=>G.goZone(zone),{sx:tx,sy:ty});
-};
+const poiSign=(x,y,w,t)=>{blk(cx,x-w/2,y,w,13,'#5a3a20');rr(cx,x-w/2+2,y+2,w-4,9,'#8b5a2b');TS(t,x,y+10,'#ffe7a8',8)};
+function poiShop(x,y,lb){const b=cx,L=x-40;
+  blk(b,L+4,y-34,72,34,'#e8c888');for(let i=0;i<8;i++)rr(b,L+9+i*8,y-30,1,28,'#d0a868');
+  blk(b,L-2,y-47,84,14,'#c0402a');blk(b,L+6,y-57,68,12,'#d8553a');blk(b,L+16,y-63,48,8,'#e86848');
+  for(let i=0;i<20;i++)rr(b,L+1+i*4,y-45,1,10,'#8a2d1c');
+  blk(b,L+10,y-22,13,12,'#9bd0e8');blk(b,L+57,y-22,13,12,'#9bd0e8');
+  blk(b,L+28,y-22,24,22,'#3a2412');rr(b,L+30,y-20,20,18,'#d8402e');rr(b,L+39,y-20,2,18,'#a8301e');
+  A.lantern(b,L+1,y-33,'#d8402e');A.lantern(b,L+71,y-33,'#f2a82a');
+  poiSign(x,y-37,62,lb);A.pot(b,L-10,y-16,'#3b8a8a');A.bush(b,L+82,y-14,'#5fb04a')}
+function poiMarket(x,y,lb){const b=cx,L=x-46;
+  blk(b,L+4,y-40,84,40,'#f6ecd2');blk(b,L,y-40,6,40,'#8b5a2b');blk(b,L+86,y-40,6,40,'#8b5a2b');
+  for(let i=0;i<11;i++)blk(b,L-2+i*8,y-56,9,16,i%2?'#fffaf0':'#d8402e');
+  for(let i=0;i<11;i++)orb(b,L+3+i*8,y-41,4,i%2?'#fffaf0':'#d8402e');
+  poiSign(x,y-36,70,lb);blk(b,L+4,y-9,84,9,'#a8733a');
+  A.crate(b,L+8,y-22,16,13);A.basket(b,L+30,y-23,'#e8483a');A.basket(b,L+52,y-23,'#f2d04a');A.sack(b,L+72,y-27);
+  A.lantern(b,L-6,y-34,'#f2a82a');A.lantern(b,L+90,y-34,'#5fb04a')}
+function poiFarm(x,y,lb){const b=cx,L=x-38;
+  orb(b,L-6,y-8,8,'#e8c050');orb(b,L+84,y-9,9,'#e0b848');
+  blk(b,L+4,y-30,70,30,'#c49a60');for(let i=0;i<9;i++)rr(b,L+8+i*7,y-27,1,26,'#a8783c');
+  blk(b,L-2,y-44,82,16,'#d8b050');blk(b,L+8,y-54,62,12,'#e0c060');blk(b,L+20,y-61,38,8,'#ecd078');
+  for(let i=0;i<20;i++)rr(b,L+1+i*4,y-42,1,12,'#a87838');
+  blk(b,L+31,y-20,16,20,'#6b4423');rr(b,L+43,y-10,2,2,'#f2d04a');
+  blk(b,L+8,y-22,12,10,'#9bd0e8');blk(b,L+58,y-22,12,10,'#9bd0e8');
+  poiSign(x,y-36,56,lb);A.crate(b,L-4,y-12,14,12);A.bush(b,L+62,y-14)}
+function poiPets(x,y,lb){const b=cx,L=x-40;
+  blk(b,L+2,y-36,76,36,'#a8573a');for(let i=0;i<9;i++)rr(b,L+6+i*8,y-33,1,32,'#8a4228');
+  blk(b,L-4,y-48,88,14,'#d8553a');blk(b,L+8,y-58,64,12,'#e86848');for(let i=0;i<22;i++)rr(b,L-2+i*4,y-46,1,10,'#a8402a');
+  blk(b,L+28,y-26,24,26,'#3a2412');rr(b,L+39,y-24,2,24,'#6b4423');
+  orb(b,x-6,y-13,5,'#fffaf0');rr(b,x-8,y-20,3,2,'#d8402e');rr(b,x-2,y-12,3,2,'#e8863a');
+  blk(b,L+62,y-14,16,14,'#e8c050');poiSign(x,y-37,64,lb);A.flower(b,L-2,y-8,'#f6b0c0');A.flower(b,L+84,y-8,'#f2d04a')}
+function poiGate(x,y,lb){const b=cx;
+  blk(b,x-26,y-36,8,36,'#a8a8a0');blk(b,x+18,y-36,8,36,'#a8a8a0');
+  blk(b,x-30,y-44,60,9,'#c0402a');blk(b,x-22,y-50,44,7,'#d8553a');
+  poiSign(x,y-30,40,lb);A.flower(b,x-34,y-6,'#f6b0c0');A.bush(b,x+28,y-12)}
+G.drawPOI=(x,y,label,zone,sx,sy)=>{
+  const k={farm:[poiFarm,76,62],market:[poiMarket,92,58],shop:[poiShop,84,64],pets:[poiPets,90,60]}[zone]||[poiGate,60,50];
+  k[0](x,y,label);HOT(x-k[1]/2,y-k[2],k[1],k[2],()=>G.goZone(zone),{sx:sx??x,sy:sy??y+10})};
 // Cửa gỗ trong nhà (bếp / quán) — không dùng cổng ngoài trời
 G.drawDoor=(x,y,zone,sx,sy)=>{
   R(x-14,y-36,28,36,'#2a1a10');

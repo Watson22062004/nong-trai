@@ -45,7 +45,7 @@ Z.farm={bg:mkBg(b=>{
   D(G.SP.bush,120,170,1.3);D(G.SP.bush,250,176,1.2);
   for(let i=0;i<6;i++)D([G.SP.flower,G.SP.flower2,G.SP.flower3][i%3],130+i*18,188,1.2);
   D(G.SP.barrel,286,172,1.4);
-  G.drawPOI(470,214,'','hub',470,214,1);
+  G.drawPOI(490,224,'Về làng','hub',470,214);
   G.P.draw(t);
   palm(24,246,t);palm(160,250,t+200);palm(340,248,t+500);palm(500,246,t+700)}
 };

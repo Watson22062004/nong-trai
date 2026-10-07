@@ -30,7 +30,7 @@ const M={
     (it.sell!=null?B('sell',sel,'Bán 1 · '+price(it.sell),'gold')+B('sellall',sel,'Bán hết','gold'):'')}
   else side=`<p class="hint tip">${inv.length?'Thanh ô nhanh đang trống: chọn một vật phẩm trong túi rồi bấm vào ô nhanh bên dưới để gắn tuỳ ý. Ô đã có đồ sẽ hoán đổi vị trí.':'Túi trống, ra ruộng thu hoạch trước đã.'}</p>`+
     (G.ui.held?`<small>Đang cầm: ${G.ic(G.ui.held)} ${G.ITEMS[G.ui.held]?.n||''}</small>`+B('unhold','','Bỏ tay'):'');
-  side+=`<span class="grow"></span>`+B('reset','','Chơi lại','red');
+  side+=`<span class="grow"></span>`;
   return `<div class="bag"><div class="bgrid">${cells}</div><div class="side">${side}</div></div>`}
 };
 const acts={seed:id=>{G.ui.seed=id;G.hold('hat_'+id)},hold:id=>G.hold(id),unhold:()=>G.unhold(),sel:id=>{G.ui.sel=G.ui.sel===id?null:id},unslot:id=>{const hb=G.ui.hotbar,i=hb.indexOf(id);if(i>=0){hb[i]=null;G.msg('Gỡ khỏi ô '+(i+1))}},

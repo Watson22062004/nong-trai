@@ -15,7 +15,7 @@ Z.pets={bg:mkBg(b=>{
   A.crate(b,246,118,18,14,'#d8b050');A.crate(b,264,124,14,12,'#e8c050');
   for(let i=0;i<10;i++)A.flower(b,50+hs(i,3)%220,50+hs(i,5)%36+(i%3)*30,['#f2d04a','#f6b0c0','#fff','#b8a0e8'][i%4]);
   // ngoài hàng rào
-  A.tree(b,300,40);A.tree(b,350,60,'#4a9a3c');A.bush(b,310,100,'#5fb04a');A.bush(b,372,120);A.tree(b,6,60);A.bush(b,6,110,'#5fb04a');
+  A.tree(b,372,92,'#4a9a3c');A.bush(b,310,100,'#5fb04a');A.tree(b,6,60);A.bush(b,6,110,'#5fb04a');
   A.sign(b,262,160);A.flower(b,300,160,'#f6b0c0');A.flower(b,356,160,'#f2d04a');
 },400,230),
  draw(t){rip(t,204,400);
@@ -26,5 +26,5 @@ Z.pets={bg:mkBg(b=>{
   D(G.SP.ga,150,100,1.6);D(G.SP.bo,214,62,2);
   dog(90+Math.sin(t/600)*16,124,t);cat(236,132,t);
   palm(330,196,t);palm(20,196,t+180);
-  G.drawPOI(340,176,'','hub',340,176,1);
+  G.drawPOI(336,52,'Về làng','hub',336,62);
   G.P.draw(t)}};
