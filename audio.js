@@ -4,6 +4,7 @@
 (()=>{
 const KEY='xoiBenDua_snd';
 let on=true;try{on=localStorage[KEY]!=='0'}catch(e){}
+const VOL=1.8; // âm lượng tổng (trước là 0.8 → hơi nhỏ, nhất là trên điện thoại). Chỉnh số này để to/nhỏ.
 let ac=null,sfx,ambBus,master,noise,crack,amb=null,busy=0;
 const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.random()*a.length|0];
 const live=()=>!!(ac&&on&&ac.state==='running'&&!document.hidden);
@@ -16,7 +17,7 @@ function init(){
   ac=new AC();
   const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=9000;
   const comp=ac.createDynamicsCompressor();comp.threshold.value=-20;comp.knee.value=18;comp.ratio.value=6;comp.attack.value=.004;comp.release.value=.2;
-  master=ac.createGain();master.gain.value=on?.8:0;
+  master=ac.createGain();master.gain.value=on?VOL:0;
   sfx=ac.createGain();ambBus=ac.createGain();
   sfx.connect(lp);ambBus.connect(lp);lp.connect(comp);comp.connect(master);master.connect(ac.destination);
   const sr=ac.sampleRate;
@@ -26,7 +27,18 @@ function init(){
       const j=i-k;if(j>=0&&j<28)d[i]+=(Math.random()*2-1)*a*(1-j/28)}}
   startAmbient();
 }
-function unlock(){if(!on)return;init();if(ac&&ac.state==='suspended')ac.resume()}
+// Trình duyệt chỉ mở khoá âm thanh khi có "cử chỉ" thật: trên cảm ứng đó là pointerup/touchend/click (KHÔNG phải pointerdown/touchstart),
+// nên unlock() được gọi ở tất cả các sự kiện đó. iOS còn cần đặt audioSession='playback' để không bị công tắc im lặng chặn.
+let kicked=false,tag=null;
+const WAV='data:audio/wav;base64,'+'UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+function kick(){if(kicked||!ac||ac.state!=='running')return;kicked=true;
+  try{const s=ac.createBufferSource();s.buffer=ac.createBuffer(1,1,22050);s.connect(ac.destination);s.start(0)}catch(e){}}
+function unlock(){
+  if(!on)return;
+  try{if(navigator.audioSession)navigator.audioSession.type='playback';
+    else if(!tag){tag=document.createElement('audio');tag.src=WAV;tag.loop=true;tag.setAttribute('playsinline','');tag.play().catch(()=>{})}}catch(e){}
+  init();
+  if(ac&&ac.state!=='running'){const r=ac.resume();if(r&&r.then)r.then(kick).catch(()=>{})}else kick()}
 
 // ===== Bộ dựng âm =====
 const env=(g,t,a,d,v)=>{g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(v,.0003),t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+d)};
@@ -259,7 +271,7 @@ addEventListener('pointerdown',e=>{
   const b=t.closest('button');if(!b||b.id==='sndbtn')return;
   const d=b.dataset;if(d.modal!==undefined||['buy','sell','sellall','animal','go','add','rows','kit','harvestall','again'].includes(d.act))return;
   SND.tick(d.act==='slot'?1.15:1)},true);
-addEventListener('keydown',unlock,true);
+['pointerup','touchend','click','keydown'].forEach(ev=>addEventListener(ev,unlock,true));
 document.addEventListener('visibilitychange',()=>{if(!ac)return;if(document.hidden)ac.suspend();else if(on)ac.resume()});
 
 // ===== Nút bật/tắt âm thanh (nhỏ, dưới nhãn khu vực góc phải) =====
@@ -271,7 +283,7 @@ const icon=()=>{btn.title=on?'Tắt âm thanh':'Bật âm thanh';btn.setAttribut
   btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#2a1a10" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="#2a1a10"/>'+(on?'<path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>':'<path d="M17 9l5 6M22 9l-5 6"/>')+'</svg>'};
 icon();
 btn.addEventListener('click',()=>{on=!on;try{localStorage[KEY]=on?'1':'0'}catch(e){}icon();
-  if(on){unlock();if(master)master.gain.setTargetAtTime(.8,ac.currentTime,.05);setTimeout(()=>SND.tick(1.1),80)}
+  if(on){unlock();if(master)master.gain.setTargetAtTime(VOL,ac.currentTime,.05);setTimeout(()=>SND.tick(1.1),80)}
   else if(master)master.gain.setTargetAtTime(0,ac.currentTime,.05)});
 document.getElementById('game').appendChild(btn);
 })();
