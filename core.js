@@ -1,31 +1,64 @@
 
 // DỮ LIỆU GAME: muốn thêm cây / con vật / món ăn → sửa file này
 const G = window.G = {};
-G.CROPS = { // seed: giá hạt, time: giây lớn, color: màu vẽ
+G.CROPS = { // seed: giá hạt, time: giây lớn, sell: giá bán, color: màu vẽ
   nep:{n:'Nếp',seed:5,time:15,sell:12,color:'#e8d27a'},
   dau_xanh:{n:'Đậu xanh',seed:8,time:20,sell:18,color:'#6fae4e'},
   hanh:{n:'Hành lá',seed:4,time:12,sell:9,color:'#3f9a4a'},
-  dua:{n:'Dừa',seed:15,time:35,sell:40,color:'#8b5a2b'}
+  dua:{n:'Dừa',seed:15,time:35,sell:40,color:'#8b5a2b'},
+  gao:{n:'Gạo',seed:6,time:18,sell:14,color:'#efe6c4'},
+  ca_chua:{n:'Cà chua',seed:6,time:14,sell:12,color:'#e2492f'},
+  rau_muong:{n:'Rau muống',seed:4,time:10,sell:8,color:'#3f8a3a'},
+  ot:{n:'Ớt',seed:5,time:16,sell:11,color:'#d8301f'},
+  ca_rot:{n:'Cà rốt',seed:5,time:16,sell:12,color:'#ee8a2a'},
+  rau_thom:{n:'Rau thơm',seed:4,time:12,sell:9,color:'#5fb04a'},
+  chuoi:{n:'Chuối',seed:12,time:30,sell:32,color:'#f2d04a'},
+  dau_phong:{n:'Đậu phộng',seed:7,time:20,sell:18,color:'#c49050'}
 };
 G.ANIMALS = { // cost: giá mua, make: sản phẩm, time: giây ra sản phẩm sau khi cho ăn
   ga:{n:'Gà',cost:50,make:'trung',time:18,color:'#fff'},
-  bo:{n:'Bò',cost:200,make:'sua',time:30,color:'#d9a066'}
+  bo:{n:'Bò',cost:200,make:'sua',time:30,color:'#d9a066'},
+  heo:{n:'Heo',cost:150,make:'thit_heo',time:35,color:'#f5a8b8'},
+  vit:{n:'Vịt',cost:70,make:'thit_vit',time:25,color:'#fff4c0'},
+  caao:{n:'Ao cá',cost:90,make:'ca',time:22,color:'#6eb5e0'}
 };
-G.ITEMS = { // vật phẩm khác (mua ở chợ / sản phẩm vật nuôi)
-  trung:{n:'Trứng',sell:15}, sua:{n:'Sữa',sell:35},
-  cam:{n:'Cám',buy:2,sell:1}, duong:{n:'Đường',buy:4,sell:2}, muoi:{n:'Muối',buy:2,sell:1}
+G.ITEMS = { // sản phẩm vật nuôi + hàng mua ở chợ (cat: gv gia vị · kho đồ khô · tuoi tươi sống · uong đồ uống)
+  trung:{n:'Trứng',sell:15}, sua:{n:'Sữa',sell:35}, thit_heo:{n:'Thịt heo',sell:30}, thit_vit:{n:'Thịt vịt',sell:26}, ca:{n:'Cá',sell:22},
+  duong:{n:'Đường',buy:4,sell:2,cat:'gv'}, muoi:{n:'Muối',buy:2,sell:1,cat:'gv'}, nuoc_mam:{n:'Nước mắm',buy:6,sell:3,cat:'gv'}, dau_an:{n:'Dầu ăn',buy:8,sell:4,cat:'gv'},
+  bun:{n:'Bún',buy:5,sell:2,cat:'kho'}, banh_pho:{n:'Bánh phở',buy:5,sell:2,cat:'kho'}, mi:{n:'Mì',buy:5,sell:2,cat:'kho'},
+  bot_mi:{n:'Bột mì',buy:6,sell:3,cat:'kho'}, banh_trang:{n:'Bánh tráng',buy:4,sell:2,cat:'kho'}, cam:{n:'Cám (cho vật nuôi)',buy:2,sell:1,cat:'kho'},
+  tom:{n:'Tôm',buy:18,sell:9,cat:'tuoi'}, thit_bo:{n:'Thịt bò',buy:28,sell:14,cat:'tuoi'}, chanh:{n:'Chanh',buy:3,sell:1,cat:'tuoi'}, da:{n:'Đá',buy:1,sell:1,cat:'tuoi'},
+  tra:{n:'Trà',buy:4,sell:2,cat:'uong'}, ca_phe:{n:'Cà phê',buy:7,sell:3,cat:'uong'}, sua_dac:{n:'Sữa đặc',buy:6,sell:3,cat:'uong'}
 };
 for(const k in G.CROPS){const c=G.CROPS[k];G.ITEMS[k]={n:c.n,e:c.e,sell:c.sell};G.ITEMS['hat_'+k]={n:'Hạt '+c.n,buy:c.seed,sell:Math.floor(c.seed/2)}}
-G.RECIPES = { // need: nguyên liệu, time: giây nấu, price: giá bán
-  xoi_dau:{n:'Xôi đậu xanh',need:{nep:1,dau_xanh:1},time:6,price:45},
-  xoi_man:{n:'Xôi mặn',need:{nep:1,hanh:1,trung:1,muoi:1},time:8,price:70},
-  xoi_dua:{n:'Xôi dừa',need:{nep:1,dua:1,duong:1},time:8,price:95},
-  flan:{n:'Bánh flan',need:{trung:2,sua:1,duong:1},time:10,price:130}
+G.RECIPES = { // cat: nhóm món · need: nguyên liệu · time: giây nấu · price: giá bán · unlock: số khách đã phục vụ để mở khoá
+  xoi_dau:{n:'Xôi đậu xanh',cat:'xoi',need:{nep:1,dau_xanh:1},time:6,price:45,unlock:0},
+  xoi_man:{n:'Xôi mặn',cat:'xoi',need:{nep:1,hanh:1,trung:1,muoi:1},time:8,price:70,unlock:0},
+  xoi_dua:{n:'Xôi dừa',cat:'xoi',need:{nep:1,dua:1,duong:1},time:8,price:95,unlock:0},
+  xoi_lac:{n:'Xôi lạc',cat:'xoi',need:{nep:1,dau_phong:1,muoi:1},time:7,price:55,unlock:5},
+  com_chien:{n:'Cơm chiên',cat:'com',need:{gao:1,trung:1,hanh:1,dau_an:1},time:8,price:75,unlock:5},
+  com_kho:{n:'Cơm thịt kho',cat:'com',need:{gao:1,thit_heo:1,nuoc_mam:1,trung:1},time:10,price:100,unlock:12},
+  chao_vit:{n:'Cháo vịt',cat:'com',need:{gao:1,thit_vit:1,hanh:1},time:9,price:90,unlock:12},
+  pho_bo:{n:'Phở bò',cat:'nuoc',need:{banh_pho:1,thit_bo:1,hanh:1,rau_thom:1},time:10,price:120,unlock:22},
+  bun_cha:{n:'Bún chả',cat:'nuoc',need:{bun:1,thit_heo:1,nuoc_mam:1,rau_thom:1},time:10,price:105,unlock:22},
+  mi_xao:{n:'Mì xào bò',cat:'nuoc',need:{mi:1,thit_bo:1,ca_rot:1,dau_an:1},time:9,price:110,unlock:22},
+  rau_muong_xao:{n:'Rau muống xào',cat:'chinh',need:{rau_muong:2,dau_an:1,ot:1},time:6,price:45,unlock:12},
+  goi_cuon:{n:'Gỏi cuốn',cat:'chinh',need:{banh_trang:1,tom:1,bun:1,rau_thom:1},time:7,price:85,unlock:12},
+  banh_mi:{n:'Bánh mì thịt',cat:'chinh',need:{bot_mi:1,thit_heo:1,ca_rot:1,rau_thom:1},time:7,price:80,unlock:5},
+  banh_xeo:{n:'Bánh xèo',cat:'chinh',need:{bot_mi:1,tom:1,trung:1,dau_an:1},time:10,price:100,unlock:35},
+  canh_chua:{n:'Canh chua cá',cat:'chinh',need:{ca:1,ca_chua:1,rau_thom:1,nuoc_mam:1},time:10,price:115,unlock:35},
+  tra_chanh:{n:'Trà chanh',cat:'ngot',need:{tra:1,chanh:1,duong:1,da:1},time:4,price:38,unlock:0},
+  ca_phe_sua:{n:'Cà phê sữa',cat:'ngot',need:{ca_phe:1,sua_dac:1,da:1},time:4,price:42,unlock:5},
+  flan:{n:'Bánh flan',cat:'ngot',need:{trung:2,sua:1,duong:1},time:10,price:130,unlock:12},
+  che_chuoi:{n:'Chè chuối',cat:'ngot',need:{chuoi:1,dua:1,duong:1},time:8,price:75,unlock:22},
+  sinh_to:{n:'Sinh tố chuối',cat:'ngot',need:{chuoi:1,sua_dac:1,da:1},time:5,price:80,unlock:35}
 };
+G.CATS={xoi:'Xôi',com:'Cơm · Cháo',nuoc:'Bún · Phở · Mì',chinh:'Món chính',ngot:'Ngọt · Uống'};
+G.unlocked=k=>G.S.served>=(G.RECIPES[k].unlock||0);
 for(const k in G.RECIPES)G.ITEMS[k]={n:G.RECIPES[k].n,e:G.RECIPES[k].e,sell:Math.floor(G.RECIPES[k].price*.6)};
 G.CFG = {plots:60,maxAnimals:8,maxCustomers:5,customerEvery:8,patience:50,startMoney:80,
   // world size per zone (larger than canvas for camera follow)
-  world:{farm:{w:520,h:300},market:{w:420,h:240},kitchen:{w:400,h:230},shop:{w:400,h:230},hub:{w:640,h:360},pets:{w:400,h:230}}};
+  world:{farm:{w:520,h:300},market:{w:420,h:240},kitchen:{w:400,h:230},shop:{w:384,h:216},hub:{w:640,h:360},pets:{w:400,h:230}}};
 G.ASSETS={
   house_red:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAu5JREFUeJztm89rGkEUx7+GtBehIGiViqdCoFAWCgmtkHgITf6AXPInCOle9tyz573Ygn9CoPQPaCWUNCUpWyhIQAj0JG1dEiiUevJgD3HMur8cx12fszufm/Nmd958nZ15+3xm4CBf0kZICTf9TgYAMqwhX9JGrWKRzqMlU7dt3PQ7mXVqR6KgbtuBtllfqvQC1G0bptkMtht6qAjSC8AwDB1Pn+1NPl9+/xgqDCMxAgC3k56XtRj8kIrErACe5e5HIgT4ctEVvlY9AtQOLEqrWAQ+vQu0780TB4QFFEllHbgNg19vPYFWyVL7szQ6vQEaFkap3wOUANQOUDPZBLVKFrsvH1D6slzaACyHAG++/kCnVyL0aLl8/tUHoB6B6TigYYmHlLJRK+cAjFNiLBfolzio23ZoQkFWOwv61oC7BGHa8OQEqw//eTq1UPRtl94+jvpTvwkqAagdoEYJQO0ANUoAageoUQJQO0CNEoDaAWqUANQOUKMEoHaAmqkiqWvjnqdDwRzCr112e8EcehMiv9v3fW4xDGiX3T4E4FgBgH+dYK2cw+nPP4G3l9XuqRME7n4kTToNqzsRQG2C7oZ8SRuxnHnY0pIN55ycWXDfCpFXzx8DAHZ6AzSsrnAB0ipgGDqctQ+n779N2VP/CHDXCG1XNwAAWy/2Y3MGAKyLD5Hd6+z8amYfoSKp67e7IpfNpHB04mk7O7+CYegzrzXN5uRLmoeVrxIzDJ1L8MKRLrR6hAQ4af8VuUyYOMebWwDTbOJwvLNG9XM6u1fYaXPo2r2dHB9sCo8tfApolexCAzOODzZJy/NSfwwqAagdoGblj0FGrZzDziNvFRur9hJFGgHY+4kbreLfzsvKC8COXZ5+Iqy8ANvVDa7JiYTBgAQCAOKT4yEWAZz/33Mi8re2uOESgOdtjBE0eWYLE2GecaKCSwB3yBsUl4dN3tknSIQoQms3Ye8QAIcAtXIOnd7A0+bHIkvcb5woCPKV8R+4dCHhyY0x/wAAAABJRU5ErkJggg==",
   house_blue:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAuZJREFUeJztmzFr20AUx/8O3gwFgwKixnQomAaKoBDTpjgeQtupU5Z8h1SL5syetbj9DoHSD9CEDGlKUlQImIKLoYMRLYIGCgXP6uCcK1k6+XyR/XSSfpN9T7p799fp7t35uYIAmm74KAg33qACAFVWoOmGrzcf0Hm0fvwbb1CpLr4u+3jumGtb9FCVF8Bzx7DtPtduWWaiCMoLwLAsE4+fvJx9/3Z9kigMIzcCANNOL8vGCvxQityMAJHhHkcuBPh8NZS+t/CvQIV9KFog5LljRAKhpIAir1SB6dM/am/BaNao/VkbA3eCngO/8HNAKQC1A9TMJkGjWcPei3uUvqyXUwBOQIC3X35g4OqEHq2XT788AOUrEA6Fe458SKka3UYdwG0kyM4C4yJBzx0nHiioamdB3wbw/4CwaERCYU1rxV7IK1fZHhoBRaYUgNoBakoBqB2gphSA2gFqSgGoHaCmFIDaAWpKAagdoKYUgNoBakLnAY9a0X3z++sTdJ6/5lagqp0lU4QE+D4axVbCK8+DPXQUFpcn2G3Ucf7zD7cCVe3sGDAiwFF7i1tZXug5w5kAhZ8EI6fBmm747Mw8aWipRrBPwVPw2ByhN08fAgB23Ql6zlA6ASkLWJaJYO7D+YevIXvhXwHhLLHOzjRGaD97tTJnAMC5+phaXReXycsjIJkm9/vdnsxtC9k8PIuUXVyOYFnmwnttuz97SMuQ+TxByzKFBN88NKVGj5QAZ6d/ZW6TZpXtLS2AbfdxcDuzpvVzOqsrabU5mJu9gxzvb0u3Lb0KGM3anRpmHO9vk6bnFX4ZLAWgdoCazC+DjG6jjt370Sw2lu0lizICsP3JPEYzvlyUzAvAll2R62TIvACdnZZQ52TCYEABAQD5zomwEgGC/98LIvO3tlUjJIDIbozB6zyzJYmwTDtpISTAfMjLi8uTOh+8hidCGqH1PEl7CEBAgG6jjoE7iZTFcZchHtdOGvB8ZfwDdlcVM4YpSDsAAAAASUVORK5CYII=",
@@ -179,7 +212,7 @@ G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0)delete G.S.inv
 
 // TRỒNG TRỌT + CHĂN NUÔI
 G.plotClick=i=>{const p=G.S.plots[i],k=G.ui.seed;
-  if(!p){ if(!G.has('hat_'+k))return G.msg('Hết hạt '+G.CROPS[k].n+' — ra Chợ mua nhé');
+  if(!p){ if(!G.has('hat_'+k))return G.msg('Hết hạt '+G.CROPS[k].n+' — ra Chợ đầu mối mua nhé');
     G.add('hat_'+k,-1);G.S.plots[i]={crop:k,t:0};}
   else if(p.t>=G.CROPS[p.crop].time){G.add(p.crop,1+(Math.random()<.3?1:0));G.S.plots[i]=null;}};
 G.buyAnimal=t=>{const a=G.ANIMALS[t];
@@ -187,7 +220,7 @@ G.buyAnimal=t=>{const a=G.ANIMALS[t];
   if(G.S.money<a.cost)return G.msg('Không đủ tiền');
   G.S.money-=a.cost;G.S.animals.push({type:t,fed:false,t:0,ready:false});};
 G.feed=i=>{const a=G.S.animals[i];if(a.fed||a.ready)return;
-  if(!G.has('cam'))return G.msg('Hết cám — ra Chợ mua nhé');G.add('cam',-1);a.fed=true;a.t=0;};
+  if(!G.has('cam'))return G.msg('Hết cám — ra Chợ đầu mối mua nhé');G.add('cam',-1);a.fed=true;a.t=0;};
 G.collect=i=>{const a=G.S.animals[i];if(!a.ready)return;
   G.add(G.ANIMALS[a.type].make);a.ready=false;a.fed=false;a.t=0;};
 G.updateFarm=dt=>{
@@ -203,16 +236,9 @@ G.msgText='';G.msg=t=>{G.msgText=t;clearTimeout(G._m);G._m=setTimeout(()=>G.msgT
 G.canCook=r=>Object.entries(G.RECIPES[r].need).every(([k,n])=>G.has(k,n));
 G.cook=r=>{if(!G.canCook(r))return G.msg('Thiếu nguyên liệu');if(G.S.cooking.length>=3)return G.msg('Bếp đang bận (tối đa 3 mẻ)');
   for(const[k,n]of Object.entries(G.RECIPES[r].need))G.add(k,-n);G.S.cooking.push({r,t:0})};
-G.serve=i=>{const c=G.S.customers[i],r=G.RECIPES[c.want];
-  if(!G.has(c.want))return G.msg('Chưa có '+r.n);
-  const tip=c.p/G.CFG.patience>.5?1.2:1; // khách còn kiên nhẫn → boa
-  G.add(c.want,-1);G.S.money+=Math.round(r.price*tip);G.S.customers.splice(i,1);G.S.served++};
 G.updateKitchen=dt=>{const S=G.S,q=S.cooking[0];
-  if(q){q.t+=dt;if(q.t>=G.RECIPES[q.r].time){G.add(q.r);S.cooking.shift()}}
-  S.spawn+=dt;
-  if(S.spawn>=G.CFG.customerEvery&&S.customers.length<G.CFG.maxCustomers){S.spawn=0;
-    const ks=Object.keys(G.RECIPES);S.customers.push({want:ks[Math.random()*ks.length|0],p:G.CFG.patience})}
-  S.customers.forEach(c=>c.p-=dt);S.customers=S.customers.filter(c=>c.p>0);
+  if(q){q.t+=dt;if(q.t>=G.RECIPES[q.r].time){G.add(q.r);G.potDone={t:performance.now(),r:q.r};S.cooking.shift()}}
+  G.updateCustomers&&G.updateCustomers(dt);
   S.clock+=dt;if(S.clock>=120){S.clock=0;S.day++}};
 
 // ENGINE VẼ: canvas 384x216 (16:9), hàm vẽ, vùng chạm (hotspot). Từng khu nằm trong zones.js
@@ -249,8 +275,8 @@ G.draw=t=>{G.hot=[];G.updateCam();const zn=G.ui.zone,z=G.zones[zn],cam=G.cam;
 // NHÂN VẬT: chạm đâu đi đó, hoạt ảnh làm việc (cuốc đất, cho ăn, khuấy nồi, bưng món), hạt bụi, chữ bay
 G.P={x:192,y:170,tx:192,ty:170,dir:'d',st:'idle',wt:0,wd:.7,wa:'dig',task:null,lt:0};
 G.fx=[];G.fl=[];G.mk=null;
-const BND={farm:[10,20,500,280],market:[8,20,410,220],kitchen:[10,20,390,210],shop:[10,20,390,210],hub:[12,24,620,340],pets:[10,20,390,210]};
-const START={farm:[200,200],market:[200,160],kitchen:[200,180],shop:[200,160],hub:[300,190],pets:[200,160]};
+const BND={farm:[10,20,500,280],market:[8,20,410,220],kitchen:[10,20,390,210],shop:[10,20,374,186],hub:[12,24,620,340],pets:[10,20,390,210]};
+const START={farm:[200,200],market:[200,160],kitchen:[200,180],shop:[192,142],hub:[300,190],pets:[200,160]};
 G.P.enter=z=>{const s=START[z]||[W/2,H/2];Object.assign(G.P,{x:s[0],y:s[1],tx:s[0],ty:s[1],st:'idle',task:null,dir:'d'});G.updateCam()};
 // Đi bộ tới POI rồi chuyển khu (không tele ngay)
 // ===== DI CHUYỂN & POI =====

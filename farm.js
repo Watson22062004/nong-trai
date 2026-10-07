@@ -29,18 +29,26 @@ Z.farm={bg:mkBg(b=>{
   S.animals.forEach((a,i)=>{const bx=408+(i%2)*50,by=40+Math.floor(i/2)*32,wk=Math.sin(t/900+i*2)*4;
    R(bx+wk+4,by+26,20,4,'#0003');
    if(a.type==='ga'){const ci=G.loadImg(G.ASSETS.chicken);if(ci.complete)cx.drawImage(ci,bx+wk,by+Math.abs(Math.sin(t/180+i))*2,32,16);else D(SP.ga,bx+wk,by,2)}
-   else{D(SP.bo,bx+wk,by,2,Math.cos(t/900+i*2)<0)}
+   else{D(SP[a.type],bx+wk,by,2,Math.cos(t/900+i*2)<0)}
    if(a.ready||!a.fed)BUB(bx+6,by-16+(a.ready?Math.sin(t/200)*2:0),a.ready?G.ANIMALS[a.type].make:'cam',a.ready?'#3ba56e':'#c8462e');
    HOT(bx-4,by-16,48,44,()=>a.ready?G.collect(i):a.fed?G.msg('Đang lớn…'):G.feed(i),{sx:bx+20,sy:by+34,anim:a.ready?'dig':'feed'})});
   // Nhà bếp lá dừa — vào bếp bằng cửa, không biển tên
   const hx=18,hy=48;
-  R(hx+6,hy+62,70,8,'#0004');
-  R(hx,hy+22,84,44,'#f3e2c0');R(hx+2,hy+24,80,40,'#fff6e4');
-  R(hx+34,hy+40,16,26,'#5a3a20');R(hx+36,hy+42,12,24,'#8b5a2b');R(hx+44,hy+52,2,2,'#f2d04a');
-  R(hx+8,hy+30,14,12,'#8ec8ea');R(hx+62,hy+30,14,12,'#8ec8ea');
-  R(hx-6,hy+16,96,8,'#c8462e');R(hx+2,hy+10,80,8,'#e86848');R(hx+14,hy+5,56,6,'#f2d04a');
-  R(hx+30,hy-2,8,8,'#d0d4d8');R(hx+32,hy-8,4,8,'#8a9098');
-  for(let i=0;i<2;i++){const yy=(t/40+i*8)%14;R(hx+33,hy-10-yy,2,2,'#fff8')}
+  const b=cx,L=hx-6,y=hy+70;
+  R(L+2,y-2,96,6,'#0004');
+  blk(b,L+4,y-38,88,38,'#f3e2c0');for(let i=0;i<10;i++)rr(b,L+9+i*8,y-34,1,32,'#e0cba0');
+  rr(b,L+4,y-8,88,8,'#c4a06a');rr(b,L+4,y-8,88,1,'#8b5a2b');
+  blk(b,L-4,y-54,104,16,'#c0402a');blk(b,L+6,y-64,84,12,'#d8553a');blk(b,L+20,y-71,56,8,'#e86848');
+  for(let i=0;i<26;i++){rr(b,L-2+i*4,y-52,1,12,'#8a2d1c');if(i>3&&i<22)rr(b,L-2+i*4,y-62,1,8,'#a8301e')}
+  blk(b,L+68,y-84,10,18,'#8a9098');rr(b,L+66,y-86,14,3,'#6a7078');
+  for(let i=0;i<2;i++){const yy=(t/40+i*8)%14;R(L+71,y-90-yy,3,3,'#fff8')}
+  blk(b,L+38,y-24,20,24,'#6b4423');rr(b,L+40,y-22,16,20,'#8b5a2b');rr(b,L+47,y-22,2,20,'#6b4423');rr(b,L+52,y-12,2,2,'#f2d04a');
+  blk(b,L+10,y-28,16,14,'#9bd0e8');blk(b,L+70,y-28,16,14,'#9bd0e8');rr(b,L+17,y-27,1,12,'#7a4a24');rr(b,L+77,y-27,1,12,'#7a4a24');
+  rr(b,L+8,y-14,20,3,'#8b5a2b');A.flower(b,L+11,y-18,'#f6b0c0');A.flower(b,L+18,y-18,'#f2d04a');
+  poiSign(hx+42,y-44,58,'Nhà bếp');
+  A.lantern(b,L,y-36,'#d8402e');A.lantern(b,L+88,y-36,'#f2a82a');
+  A.pot(b,L+72,y-14,'#c8643a');for(let r=0;r<2;r++)for(let i=0;i<3-r;i++)orb(b,L+98+i*8+r*4,y-6-r*7,4,'#a8733a');
+  
   HOT(hx,hy,90,70,()=>G.goZone('kitchen'),{sx:hx+42,sy:hy+66});
   D(G.SP.bush,120,170,1.3);D(G.SP.bush,250,176,1.2);
   for(let i=0;i<6;i++)D([G.SP.flower,G.SP.flower2,G.SP.flower3][i%3],130+i*18,188,1.2);

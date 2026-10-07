@@ -37,3 +37,59 @@ const cat=(x,y,t,c='#e8863a')=>{blk(cx,x,y,11,9,c);blk(cx,x+1,y-6,9,8,c);rr(cx,x
  rr(cx,x+3,y-3,1,2,OL);rr(cx,x+7,y-3,1,2,OL);rr(cx,x+5,y-1,1,1,'#f1a0b0');rr(cx,x+11+(Math.sin(t/400)>0?1:0),y+5,4,2,c)};
 const banana=(x,y,t)=>{const s=Math.sin(t/700+x)*1.5;blk(cx,x,y,5,22,'#6aa84a');
  [[-12,-4],[8,-6],[-8,-12],[4,-12]].forEach(([i,j],k)=>blk(cx,x+i+s*(k%2?1:-1)|0,y+j,14,6,k%2?'#5fb04a':'#4a9a3c'));orb(cx,x+7,y+10,2,'#f2d04a')};
+
+const eo=x=>1-Math.pow(1-Math.max(0,Math.min(1,x)),3);                       // ease-out
+const eb=x=>{x=Math.max(0,Math.min(1,x))-1;return 1+2.7*x*x*x+1.7*x*x};     // ease-out-back (nảy)
+
+// ---- ICON tự sinh cho nguyên liệu/món mới: [hình, màu chính, màu phụ]
+const IPAL={w:'#fffaf0',e:'#d9cfb8',g:'#4a9a3c',n:'#8b5a2b',k:'#2a1a10',r:'#d8402e',p:'#f5a8b8',q:'#e48aa0',y:'#f2d04a',o:'#e8892a'};
+const ISH={
+ bowl:['...t.t..','.aattaa.','aaaaaaaa','wwwwwwww','ewwwwwwe','.eewwee.','..eeee..','........'],
+ plate:['.tt..tt.','.aatata.','aaaaaaaa','aattaaaa','eeeeeeee','.eeeeee.','........','........'],
+ roll:['........','.wwwww..','wttwtww.','wwwwwww.','wtwwwtw.','.wwwww..','........','........'],
+ loaf:['..aaaa..','.aahaaa.','aaaaaaaa','aattttaa','aaaaaaaa','.aaaaab.','..bbbb..','........'],
+ glass:['..r.....','..r.....','.wwwwww.','.waaaaw.','.waattw.','.waaaaw.','..wwww..','........'],
+ round:['...g....','..gg....','.aaaaaa.','aahaaaaa','aaaaaaaa','aaaaaaab','.aaaabb.','..bbbb..'],
+ disc:['..aaaa..','.aaaaaa.','aahaaaaa','aaaaaaaa','aaaaaaaa','aaaaaaab','.aaaabb.','..bbbb..'],
+ long:['......g.','.....gg.','....aaa.','...aaah.','..aaaa..','.aaab...','aabb....','ab......'],
+ curve:['........','......aa.','.....aaa.','....aaab.','..aaaab..','aaaaab..','.aabb...','........'],
+ leaf:['...a.a..','.a.aaa.a','.aaaaaaa','..aabaa.','...aba..','...aba..','...nn...','...n....'],
+ sack:['..bbbb..','..aaaa..','.aaaaaa.','aaahaaaa','aaaaaaaa','aaaaaaab','aaaaaabb','.bbbbbb.'],
+ bottle:['..bb....','..bb....','.aaaa...','.aaaa...','.ahaa...','.aaaa...','.aaab...','.bbbb...'],
+ meat:['..aaaa..','.aaaaaa.','aahhaaaa','aaaaaaaa','aaaaaaab','.aaaabb.','..bbbb..','........'],
+ fish:['........','..aaa...','.aaaaa.a','aaakaaaa','.aaaaa.a','..aaa...','........','........'],
+ shrimp:['..aaa...','.aaaaa..','aaa.aa..','aa..aa..','a...aaa.','....aaa.','...aa.a.','..aa....'],
+ noodle:['..a.a...','.aaaaaa.','aaaaaaaa','aahaaaah','aaaaaaaa','.aaaaaa.','..bbbb..','........'],
+ cup:['.aaaaaa.','.aaaaaa.','.ahaaaa.','.aaaaab.','.aaaaab.','.abbbbb.','..bbbb..','........'],
+ nut:['........','..bbb...','.baaab..','baahab..','baaaab..','.baab...','..bb....','........'],
+ cube:['........','.aaaaaa.','ahhaaaaa','ahaaaaab','aaaaaaab','aaaaaabb','.bbbbbb.','........'],
+ pig:['.pp..pp.','pppppppp','pkpppkpp','ppqqqppp','ppqkqppp','.pppppp.','........','........'],
+ duck:['...yy...','..yyyy..','.yykyyoo','..yyyyo.','.yyyyyy.','yyyyyyy.','.yyyyy..','..o.o...']
+};
+const ICON={
+ gao:['sack','#efe6c4'],ca_chua:['round','#e2492f'],rau_muong:['leaf','#3f8a3a'],ot:['long','#d8301f'],ca_rot:['long','#ee8a2a'],rau_thom:['leaf','#5fb04a'],chuoi:['curve','#f2d04a'],dau_phong:['nut','#c49050'],
+ heo:['pig'],vit:['duck'],caao:['fish','#6eb5e0'],
+ thit_heo:['meat','#f0908c'],thit_vit:['meat','#d8a060'],ca:['fish','#8ab8d8'],nuoc_mam:['bottle','#a8501e'],dau_an:['bottle','#e8c030'],bun:['noodle','#f4ecd8'],banh_pho:['noodle','#fff6e4'],mi:['noodle','#e8c460'],
+ bot_mi:['sack','#f6f0e0'],banh_trang:['disc','#fff4dc'],tom:['shrimp','#f08850'],thit_bo:['meat','#c8403c'],chanh:['round','#b8d84a'],da:['cube','#bfe8f8'],tra:['cup','#a8643a'],ca_phe:['nut','#4a2a18'],sua_dac:['bottle','#f6ecd2'],
+ xoi_lac:['bowl','#f6f0d8','#c49050'],com_chien:['bowl','#f2d890','#6fb04e'],com_kho:['bowl','#fff4e0','#8a4a22'],chao_vit:['bowl','#f4ecd0','#d8a060'],pho_bo:['bowl','#d9a066','#5fb04a'],bun_cha:['bowl','#fff6e4','#c8603a'],
+ mi_xao:['plate','#e8c460','#c8403c'],canh_chua:['bowl','#e8883a','#5fb04a'],rau_muong_xao:['plate','#3f8a3a','#d8301f'],goi_cuon:['roll','#fff6e4','#e8704a'],banh_mi:['loaf','#e8b868','#6fb04e'],banh_xeo:['plate','#f2c84a','#fffaf0'],
+ che_chuoi:['bowl','#f6e8c0','#f2d04a'],ca_phe_sua:['glass','#8a5a30','#fffaf0'],tra_chanh:['glass','#e8d870','#b8d84a'],sinh_to:['glass','#f6ecc0','#f2d04a']
+};
+const _iu=G.iconUrl,_ic={};
+G.iconUrl=id=>{const d=ICON[id];if(!d)return _iu(id);if(_ic[id])return _ic[id];
+  const rows=ISH[d[0]],pal=Object.assign({},IPAL,{a:d[1]||'#fff',b:tn(d[1]||'#888888',-.25),h:tn(d[1]||'#ffffff',.4),t:d[2]||d[1]||'#fff'});
+  const c=document.createElement('canvas');c.width=c.height=10;const x=c.getContext('2d');
+  const q=(i,j)=>{const ch=(rows[j]||'')[i];return ch&&ch!=='.'?(pal[ch]||'#f0f'):null};
+  for(let j=-1;j<9;j++)for(let i=-1;i<9;i++){const v=q(i,j);if(v){x.fillStyle=v;x.fillRect(i+1,j+1,1,1)}else if(q(i+1,j)||q(i-1,j)||q(i,j+1)||q(i,j-1)){x.fillStyle=OL;x.fillRect(i+1,j+1,1,1)}}
+  return _ic[id]=c.toDataURL()};
+// ---- sprite lớn: cây trồng mới + vật nuôi mới
+const mkSpr=(rows,pal)=>{const w=Math.max(...rows.map(r=>r.length)),h=rows.length,c=document.createElement('canvas');c.width=w+2;c.height=h+2;const x=c.getContext('2d');
+  const q=(i,j)=>{const ch=(rows[j]||'')[i];return ch&&ch!=='.'?(pal[ch]||'#f0f'):null};
+  for(let j=-1;j<=h;j++)for(let i=-1;i<=w;i++){const v=q(i,j);if(v){x.fillStyle=v;x.fillRect(i+1,j+1,1,1)}else if(q(i+1,j)||q(i-1,j)||q(i,j+1)||q(i,j-1)){x.fillStyle=OL;x.fillRect(i+1,j+1,1,1)}}
+  return c};
+const SPAL={g:'#7bc653',G:'#4a9a3c',H:'#2f6a2e',y:'#f2d04a',Y:'#d9a82a',k:OL,w:'#fff',n:'#b07a3a',B:'#5a3a20',p:'#f5a8b8',q:'#e48aa0',o:'#e8892a',a:'#6eb5e0'};
+const FRU=['....g..g....','..g.gG.Gg.g.','.gGgGGGGgGGg','.GRHGGGGHRGG','.gGRHGGGHRGg','..GGHGRHGGG.','.gGGGGGGGGg.','..GGHGGHGG..','...GGGGGG...','....GGGG....','.....GG.....','.....GH.....','.....H......'];
+Object.keys(G.CROPS).forEach(k=>{if(!G.SP[k])G.SP[k]=mkSpr(FRU,Object.assign({},SPAL,{R:G.CROPS[k].color}))});
+G.SP.heo=mkSpr(['.qq......qq.','.pppppppppp.','pppkppppkppp','ppppqqqqpppp','pppqkqqkqppp','ppppqqqqpppp','.pppppppppp.','..pp....pp..'],SPAL);
+G.SP.vit=mkSpr(['....yy....','...yyyy...','...ykyyoo.','...yyyyoo.','..yyyyy...','.yYyyyyyy.','.yyyyyyyy.','..yyyyyy..','...o..o...'],SPAL);
+G.SP.caao=mkSpr(['....aaaa....','..aaaaaaa.aa','.aaakaaaaaaa','..aaaaaaa.aa','....aaaa....'],SPAL);

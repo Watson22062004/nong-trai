@@ -1,7 +1,7 @@
 const STALLS=[
-  {id:'seeds',n:'Hạt giống',aw:['#3f9a4a','#e8f5d0'],goods:['hat_nep','hat_dau_xanh','hat_hanh']},
-  {id:'ing',n:'Nguyên liệu',aw:['#3b6ea5','#d6e6f5'],goods:['duong','muoi','cam']},
-  {id:'animals',n:'Vật nuôi',aw:['#c8462e','#f6d2c8'],goods:['ga','bo']},
+  {id:'seeds',n:'Hạt giống',aw:['#3f9a4a','#e8f5d0'],goods:['hat_nep','hat_gao','hat_ca_chua']},
+  {id:'ing',n:'Nguyên liệu',aw:['#3b6ea5','#d6e6f5'],goods:['nuoc_mam','dau_an','bun']},
+  {id:'animals',n:'Vật nuôi',aw:['#c8462e','#f6d2c8'],goods:['ga','heo','caao']},
   {id:'sell',n:'Thu mua',aw:['#d9a82a','#fff3c4'],goods:['coin','dua','trung']}
 ];
 Z.market={bg:mkBg(b=>{

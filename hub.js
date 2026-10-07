@@ -57,7 +57,7 @@ Z.hub={bg:mkBg(b=>{
   const bx=((t/70)%720)-50;blk(cx,bx,314,40,9,'#a8733a');blk(cx,bx+10,306,18,9,'#e8d27a');rr(cx,bx+30,300,10,3,'#f2d9a0');rr(cx,bx+33,297,4,3,'#f2d9a0');
   dog(150+Math.sin(t/700)*40,158,t);cat(380,152,t);
   G.drawPOI(44,170,'Ruộng nhà','farm',44,184);
-  G.drawPOI(598,170,'Quán Xôi','shop',598,184);
-  G.drawPOI(250,66,'Chợ Bến Dừa','market',250,82);
+  G.drawPOI(598,170,'Nhà hàng','shop',598,184);
+  G.drawPOI(250,66,'Chợ đầu mối','market',250,82);
   G.drawPOI(358,66,'Thú cưng','pets',358,82);
   G.P.draw(t)}};
