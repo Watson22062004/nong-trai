@@ -13,7 +13,8 @@ G.CROPS = { // seed: giá hạt, time: giây lớn, sell: giá bán, color: màu
   ca_rot:{n:'Cà rốt',seed:5,time:16,sell:12,color:'#ee8a2a'},
   rau_thom:{n:'Rau thơm',seed:4,time:12,sell:9,color:'#5fb04a'},
   chuoi:{n:'Chuối',seed:12,time:30,sell:32,color:'#f2d04a'},
-  dau_phong:{n:'Đậu phộng',seed:7,time:20,sell:18,color:'#c49050'}
+  dau_phong:{n:'Đậu phộng',seed:7,time:20,sell:18,color:'#c49050'},
+  chanh:{n:'Chanh',seed:5,time:18,sell:10,color:'#b8d84a'} // nguyên liệu trà chanh: phải tự trồng (không còn bán ở chợ)
 };
 G.ANIMALS = { // cost: giá mua, make: sản phẩm, time: giây ra sản phẩm sau khi cho ăn
   ga:{n:'Gà',cost:50,make:'trung',time:18,color:'#fff'},
@@ -27,7 +28,7 @@ G.ITEMS = { // sản phẩm vật nuôi + hàng mua ở chợ (cat: gv gia vị 
   duong:{n:'Đường',buy:4,sell:2,cat:'gv'}, muoi:{n:'Muối',buy:2,sell:1,cat:'gv'}, nuoc_mam:{n:'Nước mắm',buy:6,sell:3,cat:'gv'}, dau_an:{n:'Dầu ăn',buy:8,sell:4,cat:'gv'},
   bun:{n:'Bún',buy:5,sell:2,cat:'kho'}, banh_pho:{n:'Bánh phở',buy:5,sell:2,cat:'kho'}, mi:{n:'Mì',buy:5,sell:2,cat:'kho'},
   bot_mi:{n:'Bột mì',buy:6,sell:3,cat:'kho'}, banh_trang:{n:'Bánh tráng',buy:4,sell:2,cat:'kho'}, cam:{n:'Cám (cho vật nuôi)',buy:2,sell:1,cat:'kho'},
-  tom:{n:'Tôm',buy:18,sell:9,cat:'tuoi'}, thit_bo:{n:'Thịt bò',buy:28,sell:14,cat:'tuoi'}, chanh:{n:'Chanh',buy:3,sell:1,cat:'tuoi'}, da:{n:'Đá',buy:1,sell:1,cat:'tuoi'},
+  tom:{n:'Tôm',buy:18,sell:9,cat:'tuoi'}, thit_bo:{n:'Thịt bò',buy:28,sell:14,cat:'tuoi'}, da:{n:'Đá',buy:1,sell:1,cat:'tuoi'},
   tra:{n:'Trà',buy:4,sell:2,cat:'uong'}, ca_phe:{n:'Cà phê',buy:7,sell:3,cat:'uong'}, sua_dac:{n:'Sữa đặc',buy:6,sell:3,cat:'uong'}
 };
 for(const k in G.CROPS){const c=G.CROPS[k];G.ITEMS[k]={n:c.n,e:c.e,sell:c.sell};G.ITEMS['hat_'+k]={n:'Hạt '+c.n,buy:c.seed,sell:Math.floor(c.seed/2)}}
@@ -173,12 +174,17 @@ G.SP={
 
 // TRẠNG THÁI + LƯU GAME (localStorage)
 G.KEY='xoiBenDua';
-G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2,tra:3,chanh:3,duong:3,da:3},
-  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0,open:false});
+G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2,hat_chanh:4},
+  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0,open:false,
+  tier:0,quest:0,stat:{plant:0,h:{}}}); // tier: cấp quán (0 = xe đẩy còn phủ bạt, 1 = xe đẩy) · quest: nhiệm vụ hiện tại · stat: thống kê cho nhiệm vụ
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 if(!Array.isArray(G.S.hotbar))G.S.hotbar=Array(8).fill(null);
 // Save cũ chưa có nâng cấp: mở sẵn đủ 6 hàng ruộng để không mất gì
 if(G.S.rows==null)G.S.rows=6;if(G.S.rep==null)G.S.rep=20;if(G.S.kit==null)G.S.kit=0;
+// Save trước hệ thống cấp quán: đã từng phục vụ khách thì coi như đã có xe đẩy (không bị khoá lại)
+if(G.S.tier==null)G.S.tier=G.S.served>0?1:0;if(G.S.quest==null)G.S.quest=0;
+if(!G.S.stat)G.S.stat=G.S.served>0?{plant:1,h:{chanh:3,cu:10}}:{plant:0,h:{}}; // cu = đã thu hoạch ở bản chơi cũ
+if(!G.S.stat.h)G.S.stat.h={};
 while(G.S.plots.length<G.CFG.plots)G.S.plots.push(null);
 if(G.S.plots.length>G.CFG.plots)G.S.plots=G.S.plots.slice(0,G.CFG.plots); // migrate if reduced
 G.ui={zone:'farm',seed:'nep',held:null,modal:null,sel:null,hotbar:G.S.hotbar};
@@ -216,8 +222,8 @@ G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0)delete G.S.inv
 // TRỒNG TRỌT + CHĂN NUÔI
 G.plotClick=i=>{if(Math.floor(i/10)>=G.S.rows)return;const p=G.S.plots[i],k=G.ui.seed;
   if(!p){ if(!G.has('hat_'+k))return G.msg('Hết hạt '+G.CROPS[k].n+' — ra Chợ đầu mối mua nhé');
-    G.add('hat_'+k,-1);G.S.plots[i]={crop:k,t:0};}
-  else if(p.t>=G.CROPS[p.crop].time){G.add(p.crop,1+(Math.random()<.3?1:0));G.S.plots[i]=null;}};
+    G.add('hat_'+k,-1);G.S.plots[i]={crop:k,t:0};G.S.stat.plant++;}
+  else if(p.t>=G.CROPS[p.crop].time){const n=1+(Math.random()<.3?1:0);G.add(p.crop,n);G.S.stat.h[p.crop]=(G.S.stat.h[p.crop]||0)+n;G.S.plots[i]=null;}};
 G.buyAnimal=t=>{const a=G.ANIMALS[t];
   if(G.S.animals.length>=G.CFG.maxAnimals)return G.msg('Chuồng đã đầy');
   if(G.S.money<a.cost)return G.msg('Không đủ tiền');
@@ -255,6 +261,7 @@ G.updateKitchen=dt=>{const S=G.S,q=S.cooking[0];
   if(q){q.t+=dt*G.kitSpeed();if(q.t>=G.RECIPES[q.r].time){G.add(q.r);G.potDone={t:performance.now(),r:q.r};S.cooking.shift()}}
   G.updateCustomers&&G.updateCustomers(dt);
   G.updateStall&&G.updateStall(dt);
+  G.updateProgress&&G.updateProgress(dt);
   S.clock+=dt;if(S.clock>=120){S.clock=0;S.day++}};
 
 // ENGINE VẼ: canvas 384x216 (16:9), hàm vẽ, vùng chạm (hotspot). Từng khu nằm trong zones.js
@@ -265,8 +272,20 @@ const D=(s,x,y,k=1,fl)=>{const w=s.width*k,h=s.height*k;if(fl){cx.save();cx.tran
 const hs=(x,y)=>((x*73856093)^(y*19349663))>>>0;
 const imgs={};
 const IM=(id,x,y,s=16,a=1)=>{const i=imgs[id]||(imgs[id]=Object.assign(new Image(),{src:G.iconUrl(id)}));if(i.complete){cx.globalAlpha=a;cx.drawImage(i,x|0,y|0,s,s);cx.globalAlpha=1}};
-const T=(s,x,y,c='#2a1a10',z=8,al='center')=>{cx.font='700 '+z+'px "Be Vietnam Pro",sans-serif';cx.fillStyle=c;cx.textAlign=al;cx.fillText(s,x,y)};
-const TS=(s,x,y,c,z,al)=>{T(s,x+1,y+1,'#2a1a10',z,al);T(s,x,y,c,z,al)};
+// CHỮ: mọi chữ trong game đi qua T/TS → xếp hàng → vẽ lên lớp #tx có độ phân giải bằng màn hình (không bị vỡ hạt như canvas pixel), luôn dùng Be Vietnam Pro.
+const FONT='"Be Vietnam Pro",system-ui,sans-serif';
+try{['400','600','800'].forEach(w=>document.fonts&&document.fonts.load(w+' 16px "Be Vietnam Pro"'))}catch(e){}
+const tcv=document.createElement('canvas');tcv.id='tx';cv.insertAdjacentElement('afterend',tcv);const tcx=tcv.getContext('2d');
+G.txq=[];G._tx=0;G._ty=0;
+const T=(s,x,y,c='#2a1a10',z=8,al='center')=>{G.txq.push([String(s),x+G._tx,y+G._ty,c,z,al,0])};
+const TS=(s,x,y,c,z,al='center')=>{G.txq.push([String(s),x+G._tx,y+G._ty,c||'#fff',z||8,al,1])};
+G.flushText=()=>{const dpr=Math.min(window.devicePixelRatio||1,3),w=Math.max(1,Math.round(cv.clientWidth*dpr)),h=Math.max(1,Math.round(cv.clientHeight*dpr));
+  if(tcv.width!==w||tcv.height!==h){tcv.width=w;tcv.height=h}
+  const k=w/W;tcx.clearRect(0,0,w,h);tcx.textBaseline='alphabetic';tcx.lineJoin='round';
+  for(const q of G.txq){const px=q[4]*k;tcx.font='800 '+px+'px '+FONT;tcx.textAlign=q[5];
+    if(q[6]){tcx.lineWidth=Math.max(2,px*.3);tcx.strokeStyle='#2a1a10';tcx.strokeText(q[0],q[1]*k,q[2]*k)}
+    tcx.fillStyle=q[3];tcx.fillText(q[0],q[1]*k,q[2]*k)}
+  G.txq.length=0};
 G.hot=[];const HOT=(x,y,w,h,fn,o={})=>G.hot.push({x,y,w,h,fn,sx:o.sx??x+w/2,sy:o.sy??y+h+4,anim:o.anim,dur:o.dur});
 const BUB=(x,y,id,col='#2a1a10')=>{R(x,y,24,22,col);R(x+1,y+1,22,20,'#fffaf0');R(x+10,y+22,4,3,col);R(x+11,y+22,2,2,'#fffaf0');IM(id,x+3,y+2,18)};
 // 10 cột x 6 hàng = 60 ô, đẩy sang phải để chừa đất trống cho nhà bếp bên trái
@@ -276,17 +295,18 @@ const vig=document.createElement('canvas');vig.width=W;vig.height=H;
 (()=>{const v=vig.getContext('2d'),g=v.createRadialGradient(W/2,H/2,H*.42,W/2,H/2,W*.62);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(10,8,25,.4)');v.fillStyle=g;v.fillRect(0,0,W,H)})();
 const cloud=t=>{for(let i=0;i<3;i++){const x=((t/90+i*170)%(W+140))-90,y=30+i*60;cx.fillStyle='rgba(15,40,25,.09)';cx.fillRect(x+8,y,60,22);cx.fillRect(x,y+6,76,12);cx.fillRect(x+20,y-5,32,32)}};
 const flies=t=>{for(let i=0;i<3;i++){const x=W/2+Math.sin(t/1300+i*2.1)*150,y=70+Math.cos(t/900+i)*44+i*12,w=Math.abs(Math.sin(t/55+i))*3+1,c=['#f1a0b0','#f2d04a','#8fc8e0'][i];R(x-w,y,w,2,c);R(x+1,y,w,2,c);R(x,y,1,3,'#2a1a10')}};
-G.draw=t=>{G.hot=[];G.updateCam();const zn=G.ui.zone,z=G.zones[zn],cam=G.cam;
- if(!z){cx.fillStyle="#1a3020";cx.fillRect(0,0,W,H);TS("Zone lỗi: "+zn,W/2,H/2,"#f2d04a",12);return}
- cx.save();cx.translate(-cam.x|0,-cam.y|0);
+G.draw=t=>{G.hot=[];G.txq.length=0;G._tx=0;G._ty=0;G.updateCam();const zn=G.ui.zone,z=G.zones[zn],cam=G.cam;
+ if(!z){cx.fillStyle="#1a3020";cx.fillRect(0,0,W,H);TS("Zone lỗi: "+zn,W/2,H/2,"#f2d04a",12);G.flushText();return}
+ if(G._fp!==!!z.fp){G._fp=!!z.fp;document.body.classList.toggle('fp',G._fp)} // màn góc nhìn thứ nhất: ẩn thanh túi đồ
+ cx.save();cx.translate(-cam.x|0,-cam.y|0);G._tx=(-cam.x)|0;G._ty=(-cam.y)|0;
  const ww=G.CFG.world[zn]||{w:W,h:H};
  if(z.bg)cx.drawImage(z.bg,0,0);
  z.draw(t);G.fxDraw(t);
- cx.restore();
+ cx.restore();G._tx=0;G._ty=0;
  if(zn==='farm'||zn==='market'||zn==='hub'||zn==='pets')cloud(t);
  if(zn==='farm')flies(t);
  const f=G.S.clock/120;if(f>.7){cx.fillStyle='rgba(25,30,90,'+((f-.7)/.3*.35).toFixed(2)+')';cx.fillRect(0,0,W,H)}
- cx.drawImage(vig,0,0)};
+ cx.drawImage(vig,0,0);G.flushText()};
 
 // NHÂN VẬT: chạm đâu đi đó, hoạt ảnh làm việc (cuốc đất, cho ăn, khuấy nồi, bưng món), hạt bụi, chữ bay
 G.P={x:192,y:170,tx:192,ty:170,dir:'d',st:'idle',wt:0,wd:.7,wa:'dig',task:null,lt:0};
@@ -316,6 +336,26 @@ function poiShop(x,y,lb){const b=cx,L=x-40;
   blk(b,L+28,y-22,24,22,'#3a2412');rr(b,L+30,y-20,20,18,'#d8402e');rr(b,L+39,y-20,2,18,'#a8301e');
   A.lantern(b,L+1,y-33,'#d8402e');A.lantern(b,L+71,y-33,'#f2a82a');
   poiSign(x,y-37,62,lb);A.pot(b,L-10,y-16,'#3b8a8a');A.bush(b,L+82,y-14,'#5fb04a')}
+// XE ĐẨY: hình đổi theo cấp quán G.S.tier. Thêm cấp mới = thêm 1 hàm vào POI_TIER (cấp 2, 3 sẽ nối tiếp ở đây)
+function poiCovered(x,y,lb){const b=cx,L=x-28;                       // cấp 0: xe cũ của bà, phủ bạt, kèm bảng giá sửa
+  [L+10,L+46].forEach(wx=>{orb(b,wx,y-7,7,OL);orb(b,wx,y-7,5,'#6b4423');orb(b,wx,y-7,2,'#d8b88a')});
+  blk(b,L-2,y-34,60,26,'#8a98ae');for(let i=0;i<6;i++)rr(b,L+3+i*10,y-32,1,22,'#6c7a90');rr(b,L+2,y-34,52,2,'#a8b6c8');
+  blk(b,L+8,y-40,40,8,'#7a889e');rr(b,L-4,y-12,64,2,'#5a3a20'); // dây buộc
+  rr(b,L+56,y-22,10,2,'#5a3a20');rr(b,L-10,y-20,10,2,'#5a3a20');
+  poiSign(x,y-53,40,lb);
+  blk(b,x-17,y-65,34,12,'#fffaf0');IM('coin',x-15,y-64,10);T(String(G.PROG.stallCost),x+4,y-56,'#2a1a10',7,'left')}
+function poiCart(x,y,lb){const b=cx,L=x-28;                          // cấp 1: xe đẩy đã sửa xong
+  [L+10,L+46].forEach(wx=>{orb(b,wx,y-7,7,OL);orb(b,wx,y-7,5,'#6b4423');orb(b,wx,y-7,2,'#d8b88a')});
+  blk(b,L,y-28,56,20,'#a8733a');for(let i=0;i<7;i++)rr(b,L+4+i*8,y-26,1,16,'#8a5a30');rr(b,L+2,y-17,52,3,'#e8c888');
+  blk(b,L-4,y-32,64,5,'#e2c496');
+  [[L+8,'#e6f6fa','#e0a030'],[L+22,'#e6f6fa','#dcae2e'],[L+36,'#fff6e4','#e8b060']].forEach(([gx,c,l])=>{blk(b,gx,y-41,8,9,c);rr(b,gx+1,y-37,6,4,l)});
+  rr(b,L+1,y-52,2,20,'#8b5a2b');rr(b,L+53,y-52,2,20,'#8b5a2b');
+  for(let i=0;i<8;i++){const c=i%2?'#fffaf0':'#c8462e';rr(b,L-5+i*8,y-58,8,9,c);rr(b,L-4+i*8,y-49,6,2,c)}
+  rr(b,L-5,y-58,64,1,OL);
+  rr(b,L+56,y-22,10,2,'#5a3a20');rr(b,L-10,y-20,10,2,'#5a3a20');A.lantern(b,L+57,y-46,'#f2a82a');
+  poiSign(x,y-70,44,lb)}
+const POI_TIER=[poiCovered,poiCart];
+const poiStall=(x,y,lb)=>POI_TIER[Math.min(G.S.tier|0,POI_TIER.length-1)](x,y,G.S.tier>0?lb:'Xe cũ');
 function poiMarket(x,y,lb){const b=cx,L=x-46;
   blk(b,L+4,y-40,84,40,'#f6ecd2');blk(b,L,y-40,6,40,'#8b5a2b');blk(b,L+86,y-40,6,40,'#8b5a2b');
   for(let i=0;i<11;i++)blk(b,L-2+i*8,y-56,9,16,i%2?'#fffaf0':'#d8402e');
@@ -342,8 +382,8 @@ function poiGate(x,y,lb){const b=cx;
   blk(b,x-30,y-44,60,9,'#c0402a');blk(b,x-22,y-50,44,7,'#d8553a');
   poiSign(x,y-30,40,lb);A.flower(b,x-34,y-6,'#f6b0c0');A.bush(b,x+28,y-12)}
 G.drawPOI=(x,y,label,zone,sx,sy)=>{
-  const k={farm:[poiFarm,76,62],market:[poiMarket,92,58],shop:[poiShop,84,64],stall:[poiShop,84,64],pets:[poiPets,90,60]}[zone]||[poiGate,60,50];
-  k[0](x,y,label);HOT(x-k[1]/2,y-k[2],k[1],k[2],()=>G.goZone(zone),{sx:sx??x,sy:sy??y+10})};
+  const k={farm:[poiFarm,76,62],market:[poiMarket,92,58],shop:[poiShop,84,64],stall:[poiStall,84,78],pets:[poiPets,90,60]}[zone]||[poiGate,60,50];
+  k[0](x,y,label);HOT(x-k[1]/2,y-k[2],k[1],k[2],()=>G.enterZone(zone),{sx:sx??x,sy:sy??y+10})};
 // Cửa gỗ trong nhà (bếp / quán) — không dùng cổng ngoài trời
 G.drawDoor=(x,y,zone,sx,sy)=>{
   R(x-14,y-36,28,36,'#2a1a10');

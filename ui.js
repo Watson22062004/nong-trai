@@ -6,8 +6,11 @@ const B=(a,id,t,c='')=>`<button class="btn ${c}" data-act="${a}" data-id="${id}"
 const price=p=>`${G.ic('coin')}${p}`;
 const need=r=>`<div class="ing">${Object.entries(G.RECIPES[r].need).map(([k,n])=>`<span class="${G.has(k,n)?'':'lack'}">${G.ic(k)}×${n}</span>`).join('')}</div>`;
 const buyList=ids=>ids.map(k=>`<div class="row">${L(k,G.S.inv[k]||0)}${B('buy',k,price(G.ITEMS[k].buy),'gold')}</div>`).join('');
-const TITLE={upgrade:'Nâng cấp',seeds:'Hạt giống',ing:'Nguyên liệu',animals:'Vật nuôi',sell:'Thu mua',cook:'Bếp',bag:'Túi đồ'};
+const TITLE={build:'Xe đẩy của bà',upgrade:'Nâng cấp',seeds:'Hạt giống',ing:'Nguyên liệu',animals:'Vật nuôi',sell:'Thu mua',cook:'Bếp',bag:'Túi đồ'};
 const M={
+ build:()=>{const S=G.S,c=G.PROG.stallCost,ok=S.money>=c;
+  return `<div class="row"><span class="name">${G.ic('banh_mi')}<span>Sửa lại chiếc xe đẩy cũ<small>Bạn có ${S.money} xu · cần ${c} xu${ok?'':' · còn thiếu '+(c-S.money)}</small></span></span>${ok?B('buildstall','',price(c),'gold'):'<b>Chưa đủ xu</b>'}</div>`+
+   `<p class="hint">Bà để lại chiếc xe đẩy này ở Bến Dừa. Trồng trọt, bán nông sản ở Chợ đầu mối để dành đủ xu sửa xe. Nguyên liệu như chanh, rau thơm, cà rốt đều trồng được ở ruộng nhà.</p>`},
  upgrade:()=>{const S=G.S,rc=G.rowCost(),kc=G.kitCost(),sp=G.KIT_SPEED;
   return `<div class="row"><span class="name">${G.ic('seed')}<span>Mở rộng ruộng<small>Đang mở ${S.rows}/6 hàng · ${S.rows*10} ô</small></span></span>${rc!=null?B('rows','',price(rc),'gold'):'<b>Tối đa</b>'}</div>`+
    `<div class="row"><span class="name">${G.ic('xoi_man')}<span>Bếp lửa mạnh · cấp ${S.kit}/3<small>Nấu nhanh ×${sp[S.kit]}${S.kit<3?' → ×'+sp[S.kit+1]:''}</small></span></span>${kc!=null?B('kit','',price(kc),'gold'):'<b>Tối đa</b>'}</div>`+
@@ -66,7 +69,7 @@ const acts={seed:id=>{G.ui.seed=id;G.hold('hat_'+id)},hold:id=>G.hold(id),unhold
   if(!id){G.unhold();return}
   if(!G.S.inv[id]&&!id.startsWith('hat_')){G.msg('Hết '+(G.ITEMS[id]?.n||id));return}
   G.hold(id)},
- animal:G.buyAnimal,rows:()=>G.buyRow(),kit:()=>G.buyKit(),harvestall:()=>G.harvestAll(),shopopen:()=>G.openShop(),shopclose:()=>G.closeShop(),
+ animal:G.buyAnimal,rows:()=>G.buyRow(),kit:()=>G.buyKit(),harvestall:()=>G.harvestAll(),buildstall:()=>G.buildStall(),shopopen:()=>G.openShop(),shopclose:()=>G.closeShop(),
  again:()=>{const U=G.ui,k=U.last;if(!k||!G.unlocked(k))return;const n0=G.S.cooking.length;G.cook(k);if(G.S.cooking.length>n0){U.rec=k;U.pot={};fxk('cook',k);G.P.work('stir',.6)}},feed:i=>G.feed(+i),collect:i=>G.collect(+i),buy:G.buy,
  sell:id=>G.sell(id),sellall:id=>G.sell(id,1),rec:id=>{if(!G.unlocked(id))return G.msg('Phục vụ '+G.RECIPES[id].unlock+' khách để mở khoá '+G.RECIPES[id].n);G.ui.rec=id;G.ui.pot={}},rcat:id=>{G.ui.rcat=id},itab:id=>{G.ui.itab=id},clear:()=>{G.ui.pot={}},
  add:id=>{const U=G.ui,r=G.RECIPES[U.rec];U.pot=U.pot||{};
@@ -83,6 +86,7 @@ const ZN={farm:'Trang trại',market:'Chợ đầu mối',kitchen:'Nhà bếp',s
 function ui(){const S=G.S,z=G.ui.zone;
  $('#hud').innerHTML=`<div class="left"><span class="stat">${G.ic('coin')}<b>${S.money}</b></span><span class="stat">${G.ic('sun')}<b>Ngày ${S.day}</b></span><span class="stat">${G.ic('face')}<b>${S.served}</b></span><span class="stat">${G.ic('star')}<b>${G.stars()}</b></span></div><span class="zonepill">${ZN[z]||z}</span>`;
  $('#toast').textContent=G.msgText;
+ const qh0=G.questHTML(),qe=$('#quest');if(qe._h!==qh0){qe.innerHTML=qh0;qe._h=qh0}
  const ready=S.plots.filter(p=>p&&p.t>=G.CROPS[p.crop].time).length+S.animals.filter(a=>a.ready).length;
  const rb=$('#readybd'); if(rb) rb.textContent=ready||'';
  const qk=$('#quick'),qh=z==='farm'&&ready&&!G.ui.modal?`<button class="btn gold" data-act="harvestall">Thu hoạch hết (${ready})</button>`:z==='shop'&&!G.ui.modal?(S.open?`<button class="btn" data-act="shopclose">Đóng cửa${S.customers.length?` (còn ${S.customers.length} khách)`:''}</button>`:`<button class="btn gold" data-act="shopopen">Mở cửa đón khách</button>`):'';if(qk._h!==qh){qk.innerHTML=qh;qk._h=qh}
