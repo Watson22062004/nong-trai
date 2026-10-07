@@ -65,6 +65,8 @@ Z.kitchen={bg:mkBg(b=>{
    if(q){const r=G.RECIPES[q.r],f=i?0:q.t/r.time;R(x,y-5,30,4,OL);R(x+1,y-4,28*f,2,'#4f9a45');BUB(x+3,y-30,q.r);
     if(!i)for(let k=0;k<3;k++){const yy=(t/28+k*9)%16;R(x+8+k*6,y+1-yy,2,2,'#fff8')}}}
   HOT(124,48,140,70,()=>{G.ui.modal='cook'},{sx:190,sy:130,anim:'stir',dur:.8});
+  HOT(126,22,142,26,()=>{G.ui.modal='upgrade';G.refreshUI()},{sx:190,sy:130}); // giá treo dụng cụ → Nâng cấp
+  if(G.kitCost()!=null)IM('coin',258,20+Math.sin(t/300)*1.5,12);
   // lá chuối để món chín
   blk(cx,248,166,124,32,'#3f7a32');for(let k=0;k<7;k++)rr(cx,256+k*16,170,1,24,'#5fb04a');rr(cx,250,181,120,1,'#2f6a2a');
   Object.keys(G.RECIPES).forEach((k,i)=>{const n=S.inv[k]||0,x=258+i*28;IM(k,x,172,18,n?1:.35);TS('×'+n,x+9,198,'#fff6e4',7)});

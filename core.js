@@ -114,7 +114,8 @@ const S={
  sun:['...y....','y..y..y.','.yyyyy..','.yyyyy.y','yyyyyyy.','.yyyyy..','y..y..y.','...y....'],
  face:['..BBBB..','.BBBBBB.','.pppppp.','.pkppkp.','.pppppp.','..prrp..','.rrrrrr.','.rrrrrr.'],
  // Balo to rõ hơn
- balo:['.BB..BB.','.BBBBBB.','BByyyyBB','ByeeeeBy','ByeyyeBy','ByeeeeBy','BByyyyBB','.BBBBBB.']
+ balo:['.BB..BB.','.BBBBBB.','BByyyyBB','ByeeeeBy','ByeyyeBy','ByeeeeBy','BByyyyBB','.BBBBBB.'],
+ star:['...yy...','...yy...','yyyyyyyy','.yyyyyy.','..yyyy..','..yyyy..','.yy..yy.','yy....yy']
 };
 const tint={xoi_dau:'#9ac45a',xoi_man:'#d98a3a',xoi_dua:'#fff8e8'};
 const cache={};
@@ -173,9 +174,11 @@ G.SP={
 // TRẠNG THÁI + LƯU GAME (localStorage)
 G.KEY='xoiBenDua';
 G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2},
-  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0});
+  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0});
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 if(!Array.isArray(G.S.hotbar))G.S.hotbar=Array(8).fill(null);
+// Save cũ chưa có nâng cấp: mở sẵn đủ 6 hàng ruộng để không mất gì
+if(G.S.rows==null)G.S.rows=6;if(G.S.rep==null)G.S.rep=20;if(G.S.kit==null)G.S.kit=0;
 while(G.S.plots.length<G.CFG.plots)G.S.plots.push(null);
 if(G.S.plots.length>G.CFG.plots)G.S.plots=G.S.plots.slice(0,G.CFG.plots); // migrate if reduced
 G.ui={zone:'farm',seed:'nep',held:null,modal:null,sel:null,hotbar:G.S.hotbar};
@@ -211,7 +214,7 @@ G.has=(id,n=1)=>(G.S.inv[id]||0)>=n;
 G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0)delete G.S.inv[id]};
 
 // TRỒNG TRỌT + CHĂN NUÔI
-G.plotClick=i=>{const p=G.S.plots[i],k=G.ui.seed;
+G.plotClick=i=>{if(Math.floor(i/10)>=G.S.rows)return;const p=G.S.plots[i],k=G.ui.seed;
   if(!p){ if(!G.has('hat_'+k))return G.msg('Hết hạt '+G.CROPS[k].n+' — ra Chợ đầu mối mua nhé');
     G.add('hat_'+k,-1);G.S.plots[i]={crop:k,t:0};}
   else if(p.t>=G.CROPS[p.crop].time){G.add(p.crop,1+(Math.random()<.3?1:0));G.S.plots[i]=null;}};
@@ -223,6 +226,18 @@ G.feed=i=>{const a=G.S.animals[i];if(a.fed||a.ready)return;
   if(!G.has('cam'))return G.msg('Hết cám — ra Chợ đầu mối mua nhé');G.add('cam',-1);a.fed=true;a.t=0;};
 G.collect=i=>{const a=G.S.animals[i];if(!a.ready)return;
   G.add(G.ANIMALS[a.type].make);a.ready=false;a.fed=false;a.t=0;};
+// Thu hoạch tất cả ô chín + sản phẩm vật nuôi đã sẵn sàng
+G.harvestAll=()=>{let n=0;
+  G.S.plots.forEach((p,i)=>{if(p&&p.t>=G.CROPS[p.crop].time){G.plotClick(i);n++}});
+  G.S.animals.forEach((a,i)=>{if(a.ready){G.collect(i);n++}});
+  G.msg(n?'Thu hoạch '+n+' mục':'Chưa có gì để thu hoạch');return n};
+// NÂNG CẤP: mở rộng ruộng theo hàng (10 ô/hàng) · bếp lửa mạnh nấu nhanh hơn
+G.ROW_COST=[0,0,200,400,700,1100];G.KIT_COST=[150,350,700];G.KIT_SPEED=[1,1.25,1.5,2];
+G.rowCost=()=>G.S.rows<6?G.ROW_COST[G.S.rows]:null;
+G.kitCost=()=>G.S.kit<3?G.KIT_COST[G.S.kit]:null;
+G.kitSpeed=()=>G.KIT_SPEED[G.S.kit]||1;
+G.buyRow=()=>{const c=G.rowCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.S.money-=c;G.S.rows++;G.msg('Đã mở thêm 1 hàng ruộng!')};
+G.buyKit=()=>{const c=G.kitCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.S.money-=c;G.S.kit++;G.msg('Bếp lên cấp '+G.S.kit+' — nấu nhanh hơn!')};
 G.updateFarm=dt=>{
   G.S.plots.forEach(p=>{if(p)p.t=Math.min(p.t+dt,G.CROPS[p.crop].time)});
   G.S.animals.forEach(a=>{if(a.fed&&!a.ready){a.t+=dt;if(a.t>=G.ANIMALS[a.type].time)a.ready=true}});};
@@ -237,7 +252,7 @@ G.canCook=r=>Object.entries(G.RECIPES[r].need).every(([k,n])=>G.has(k,n));
 G.cook=r=>{if(!G.canCook(r))return G.msg('Thiếu nguyên liệu');if(G.S.cooking.length>=3)return G.msg('Bếp đang bận (tối đa 3 mẻ)');
   for(const[k,n]of Object.entries(G.RECIPES[r].need))G.add(k,-n);G.S.cooking.push({r,t:0})};
 G.updateKitchen=dt=>{const S=G.S,q=S.cooking[0];
-  if(q){q.t+=dt;if(q.t>=G.RECIPES[q.r].time){G.add(q.r);G.potDone={t:performance.now(),r:q.r};S.cooking.shift()}}
+  if(q){q.t+=dt*G.kitSpeed();if(q.t>=G.RECIPES[q.r].time){G.add(q.r);G.potDone={t:performance.now(),r:q.r};S.cooking.shift()}}
   G.updateCustomers&&G.updateCustomers(dt);
   S.clock+=dt;if(S.clock>=120){S.clock=0;S.day++}};
 

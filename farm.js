@@ -18,6 +18,11 @@ Z.farm={bg:mkBg(b=>{
 },520,300),
  draw(t){const S=G.S,SP=G.SP;rip(t,254,520);
   S.plots.forEach((p,i)=>{const{x,y}=G.plotPos(i);
+   if(Math.floor(i/10)>=S.rows){ // ô chưa mở: chạm để mở bảng Nâng cấp
+    R(x+1,y+2,24,24,'#0003');R(x,y,24,24,'#3a2a1c');R(x+1,y+1,22,22,'#6b5a48');R(x+2,y+2,20,20,'#7d6a55');
+    R(x+9,y+6,6,1,'#2a1a10');R(x+9,y+7,1,4,'#2a1a10');R(x+14,y+7,1,4,'#2a1a10');R(x+8,y+10,8,7,'#f2b632');R(x+11,y+12,2,3,'#2a1a10');
+    if(i===S.rows*10)TS(G.rowCost(),x+12,y+23,'#ffe27a',7);
+    HOT(x,y,24,24,()=>{G.ui.modal='upgrade';G.refreshUI()},{sx:x+12,sy:y+28});return}
    R(x+1,y+2,24,24,'#0003');
    R(x,y,24,24,'#5a3a20');
    R(x+1,y+1,22,22,'#b07a42');R(x+2,y+2,20,20,'#c48a52');

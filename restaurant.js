@@ -4,6 +4,9 @@ G.REST={door:{x:192,y:50},q:{x:192,y:96},home:{x:192,y:142},gateIn:{x:335,y:98},
 G.REST.seats=[];G.REST.tables.forEach((t,i)=>[-1,1].forEach(s=>G.REST.seats.push({x:t.x+s*19,y:76,t:i,side:s})));
 Object.assign(G.CFG,{patience:60,patienceOrder:30,eatTime:6,maxQueue:3,customerEvery:9});
 G.S.customers=[];G.carry=null;G.delivering=null;
+// UY TÍN: S.rep 0–100 → 1–5 sao. Khách vui +, khách bực bỏ về −. Nhiều sao → khách đến nhanh hơn, 4–5 sao có tiền thưởng.
+G.stars=()=>Math.min(5,1+Math.floor(G.S.rep/20));
+G.addRep=d=>{const S=G.S,s0=G.stars();S.rep=Math.max(0,Math.min(100,S.rep+d));if(G.stars()>s0)G.msg('Quán lên '+G.stars()+' sao!')};
 // đi qua nhiều điểm liên tiếp
 G.walk=(pts,done)=>{const[p,...r]=pts;G.P.go(p[0],p[1],()=>r.length?G.walk(r,done):done&&done())};
 const mv=(c,dt)=>{const p=c.path&&c.path[0];if(!p)return true;
@@ -12,12 +15,12 @@ const mv=(c,dt)=>{const p=c.path&&c.path[0];if(!p)return true;
   c.x+=dx/d*s;c.y+=dy/d*s;c.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?1:3):(dy<0?2:0);return false};
 const leave=c=>{const R=G.REST,p=[];if(c.y<92)p.push([c.x,96]);if(c.x!==192)p.push([192,Math.max(c.y,96)]);p.push([192,R.door.y]);
   c.st='leave';c.path=p;c.qk=null;c.seat=-1};
-const mad=c=>{c.mad=true;leave(c)};
+const mad=c=>{c.mad=true;G.addRep(-5);leave(c)};
 G.updateCustomers=dt=>{const S=G.S,R=G.REST,C=S.customers,F=G.CFG;
   const d=G.delivering;if(d&&d.st==='serving'&&G.P.st==='idle'&&!G.P.task)G.cancelDeliver();
   S.spawn+=dt;
   const qn=C.filter(c=>c.st==='in'||c.st==='queue'||c.st==='order').length;
-  if(S.spawn>=F.customerEvery&&C.length<F.maxCustomers&&qn<F.maxQueue){S.spawn=0;const ks=Object.keys(G.RECIPES).filter(G.unlocked);C.push({want:ks[Math.random()*ks.length|0],p:F.patienceOrder,st:'in',x:R.door.x,y:R.door.y,sk:Math.random()*4|0,seat:-1,dir:0,path:[]})}
+  if(S.spawn>=F.customerEvery*(1.3-.1*G.stars())&&C.length<F.maxCustomers&&qn<F.maxQueue){S.spawn=0;const ks=Object.keys(G.RECIPES).filter(G.unlocked);C.push({want:ks[Math.random()*ks.length|0],p:F.patienceOrder,st:'in',x:R.door.x,y:R.door.y,sk:Math.random()*4|0,seat:-1,dir:0,path:[]})}
   let qi=0;
   C.forEach(c=>{
     if(c._s!==c.st){c._s=c.st;c.age=0}else c.age+=dt;c.life=(c.life||0)+dt;
@@ -28,7 +31,7 @@ G.updateCustomers=dt=>{const S=G.S,R=G.REST,C=S.customers,F=G.CFG;
       if(c.st!=='in'){c.p-=dt;if(c.p<=0)mad(c)}}
     else if(c.st==='toseat'){if(mv(c,dt)){c.st='wait';c.p=F.patience;c.dir=0}}
     else if(c.st==='wait'){c.p-=dt;if(c.p<=0)mad(c)}
-    else if(c.st==='eat'){c.eatT-=dt;if(c.eatT<=0){S.money+=c.pay;S.served++;{const nw=Object.keys(G.RECIPES).filter(k=>G.RECIPES[k].unlock===S.served).map(k=>G.RECIPES[k].n);if(nw.length)G.msg('Mở khoá món mới: '+nw.join(', ')+'!')}G.float('+'+c.pay,c.x,c.y-30,'#f2d04a');G.spark(c.x,c.y-20,'#f2d04a',8,100);leave(c)}}
+    else if(c.st==='eat'){c.eatT-=dt;if(c.eatT<=0){S.money+=c.pay;S.served++;G.addRep(c.fast?3:2);{const nw=Object.keys(G.RECIPES).filter(k=>G.RECIPES[k].unlock===S.served).map(k=>G.RECIPES[k].n);if(nw.length)G.msg('Mở khoá món mới: '+nw.join(', ')+'!')}G.float('+'+c.pay,c.x,c.y-30,'#f2d04a');G.spark(c.x,c.y-20,'#f2d04a',8,100);leave(c)}}
     else if(c.st==='leave'){if(mv(c,dt))c.dead=true}});
   S.customers=S.customers.filter(c=>!c.dead)};
 // Nhận order: khách ở quầy chọn món rồi đi ngồi bàn
@@ -44,7 +47,7 @@ G.deliver=c=>{if(c.st!=='wait')return;const r=G.RECIPES[c.want];
   if(!G.has(c.want))return G.msg('Chưa có '+r.n+' — chạm bếp để nấu');
   if(G.delivering)G.cancelDeliver();
   const R=G.REST,s=R.seats[c.seat];
-  c.st='serving';c.pay=Math.round(r.price*(c.p/G.CFG.patience>.5?1.2:1));G.add(c.want,-1);G.carry=c.want;G.delivering=c;
+  c.st='serving';c.fast=c.p/G.CFG.patience>.5;c.pay=Math.round(r.price*(c.fast?1.2:1)*(1+.05*Math.max(0,G.stars()-3)));G.add(c.want,-1);G.carry=c.want;G.delivering=c;
   G.walk([[R.gateOut.x,R.gateOut.y],[R.gateIn.x,R.gateIn.y],[s.x,96]],()=>{
     G.P.work('serve',.5,()=>{G.carry=null;G.delivering=null;c.st='eat';c.eatT=G.CFG.eatTime;
       G.walk([[R.gateIn.x,R.gateIn.y],[R.gateOut.x,R.gateOut.y],[R.home.x,R.home.y]])})})};
