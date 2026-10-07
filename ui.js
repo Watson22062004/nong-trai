@@ -28,7 +28,7 @@ const M={
     `<p class="hint tip">Bấm một ô nhanh bên dưới để gắn. Ô đã có đồ sẽ hoán đổi.</p>`+
     B('hold',sel,G.ui.held===sel?'Bỏ tay':'Cầm')+(h>=0?B('unslot',sel,'Gỡ khỏi ô '+(h+1),'red'):'')+
     (it.sell!=null?B('sell',sel,'Bán 1 · '+price(it.sell),'gold')+B('sellall',sel,'Bán hết','gold'):'')}
-  else side=`<p class="hint tip">${inv.length?'Chọn một vật phẩm trong túi, rồi bấm vào ô nhanh bên dưới để gắn. Ô đã có đồ sẽ hoán đổi vị trí.':'Túi trống, ra ruộng thu hoạch trước đã.'}</p>`+
+  else side=`<p class="hint tip">${inv.length?'Thanh ô nhanh đang trống: chọn một vật phẩm trong túi rồi bấm vào ô nhanh bên dưới để gắn tuỳ ý. Ô đã có đồ sẽ hoán đổi vị trí.':'Túi trống, ra ruộng thu hoạch trước đã.'}</p>`+
     (G.ui.held?`<small>Đang cầm: ${G.ic(G.ui.held)} ${G.ITEMS[G.ui.held]?.n||''}</small>`+B('unhold','','Bỏ tay'):'');
   side+=`<span class="grow"></span>`+B('reset','','Chơi lại','red');
   return `<div class="bag"><div class="bgrid">${cells}</div><div class="side">${side}</div></div>`}
@@ -49,7 +49,6 @@ function ui(){const S=G.S,z=G.ui.zone;
  const ready=S.plots.filter(p=>p&&p.t>=G.CROPS[p.crop].time).length+S.animals.filter(a=>a.ready).length;
  const rb=$('#readybd'); if(rb) rb.textContent=ready||'';
  // Thanh 8 ô cùng kích thước — chỉ 1 ô được chọn
- G.fillHot();
  const bm=G.ui.modal==='bag',ps=G.ui.sel;
  const th=G.ui.hotbar.map((id,i)=>{
    if(!id)return `<button class="chip empty ${bm&&ps?'tgt':''}" data-act="slot" data-id="${i}"><span class="slotn">${i+1}</span></button>`;

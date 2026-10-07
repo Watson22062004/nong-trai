@@ -140,11 +140,12 @@ G.SP={
 // TRẠNG THÁI + LƯU GAME (localStorage)
 G.KEY='xoiBenDua';
 G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2},
-  plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0});
+  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0});
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
+if(!Array.isArray(G.S.hotbar))G.S.hotbar=Array(8).fill(null);
 while(G.S.plots.length<G.CFG.plots)G.S.plots.push(null);
 if(G.S.plots.length>G.CFG.plots)G.S.plots=G.S.plots.slice(0,G.CFG.plots); // migrate if reduced
-G.ui={zone:'farm',seed:'nep',held:null,modal:null,sel:null,hotbar:['hat_nep','hat_dau_xanh','hat_hanh',null,null,null,null,null]};
+G.ui={zone:'farm',seed:'nep',held:null,modal:null,sel:null,hotbar:G.S.hotbar};
 // Trang bị nhanh 8 ô (Stardew-style)
 G.hold=id=>{
   if(!id){G.ui.held=null;return}
@@ -172,7 +173,7 @@ G.fillHot=()=>{
   });
 };
 G.save=()=>{try{localStorage[G.KEY]=JSON.stringify(G.S)}catch(e){}};
-G.reset=()=>{G.S=G.fresh();G.save()};
+G.reset=()=>{G.S=G.fresh();G.ui.hotbar=G.S.hotbar;G.ui.held=null;G.ui.sel=null;G.save()};
 G.has=(id,n=1)=>(G.S.inv[id]||0)>=n;
 G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0)delete G.S.inv[id]};
 
@@ -264,39 +265,37 @@ G.goZone=zone=>{
 G.travelTo=(zone,sx,sy)=>G.P.go(sx,sy,()=>G.goZone(zone));
 // Cổng pixel: bấm → đi tới cửa → vào zone. Không còn biển chữ.
 function roof(x,y,w,c){R(x,y,w,4,c);R(x+2,y-3,w-4,3,c);R(x+5,y-5,w-10,2,'#f2d9a0')}
-function gateFarm(x,y){
-  R(x-20,y-8,40,8,'#6fae4e');R(x-16,y-12,10,5,'#e8d27a');R(x+4,y-11,12,5,'#7ec85e');
-  R(x-24,y-34,5,34,'#5a3a20');R(x+19,y-34,5,34,'#5a3a20');
-  R(x-26,y-38,52,5,'#c4a06a');R(x-20,y-42,40,4,'#d8b56a');R(x-14,y-45,28,3,'#e8c878');
-  R(x-19,y-26,38,3,'#8b5a2b');R(x-19,y-16,38,3,'#8b5a2b');
-  R(x-6,y-24,3,16,'#a07040');R(x+3,y-24,3,16,'#a07040');
+function gateFarm(x,y){const b=cx;
+  A.bush(b,x-36,y-14,'#4a9a3c');A.bush(b,x+16,y-14,'#5fb04a');
+  blk(b,x-24,y-34,6,34,'#8b5a2b');blk(b,x+18,y-34,6,34,'#8b5a2b');
+  blk(b,x-28,y-42,56,8,'#c4a06a');blk(b,x-20,y-48,40,7,'#d8b56a');
+  for(let i=0;i<8;i++)rr(b,x-24+i*6,y-40,1,5,'#a8844a');
+  rr(b,x-18,y-28,36,3,'#8b5a2b');
+  blk(b,x-10,y-26,20,13,'#a8733a');orb(b,x-4,y-20,3,'#6fae4e');orb(b,x+4,y-20,3,'#e8d27a');
 }
-function gateMarket(x,y){
-  R(x-26,y-32,5,32,'#6b3a22');R(x+21,y-32,5,32,'#6b3a22');
-  R(x-28,y-36,56,4,'#8b5a2b');
-  for(let i=0;i<7;i++)R(x-26+i*8,y-44,8,8,i%2?'#fffaf0':'#c8462e');
-  R(x-22,y-18,12,8,'#c4a06a');R(x-20,y-22,8,5,'#6fae4e');
-  R(x+6,y-16,14,8,'#a07040');R(x+8,y-20,10,5,'#e8d27a');
-  R(x-4,y-14,8,6,'#d9a066');
+function gateMarket(x,y){const b=cx;
+  A.crate(b,x-26,y-12,14,12);A.basket(b,x+10,y-14,'#e8483a');
+  blk(b,x-26,y-34,5,34,'#8b5a2b');blk(b,x+21,y-34,5,34,'#8b5a2b');
+  for(let i=0;i<7;i++)blk(b,x-28+i*8,y-46,9,12,i%2?'#fffaf0':'#d8402e');
+  for(let i=0;i<7;i++)rr(b,x-27+i*8,y-34,7,2,i%2?'#fffaf0':'#d8402e');
+  A.lantern(b,x-14,y-30,'#d8402e');A.lantern(b,x+8,y-30,'#f2a82a');
 }
-function gateShop(x,y){
-  R(x-24,y-6,48,6,'#c4a06a');
-  R(x-20,y-28,4,22,'#5a3a20');R(x+16,y-28,4,22,'#5a3a20');
-  R(x-26,y-32,52,5,'#c8462e');R(x-20,y-36,40,4,'#e86848');R(x-12,y-39,24,3,'#f2d04a');
-  R(x-10,y-22,20,8,'#d0d4d8');R(x-8,y-26,16,5,'#e8d27a');R(x-6,y-28,12,3,'#fffaf0');
-  R(x-22,y-14,8,6,'#3f9a4a');
+function gateShop(x,y){const b=cx;
+  blk(b,x-22,y-8,44,8,'#c4a06a');
+  blk(b,x-20,y-30,5,24,'#6b3a22');blk(b,x+15,y-30,5,24,'#6b3a22');
+  blk(b,x-28,y-36,56,6,'#d8402e');blk(b,x-22,y-42,44,6,'#e86848');blk(b,x-14,y-47,28,6,'#f2c23a');
+  blk(b,x-9,y-26,18,12,'#fff6e4');rr(b,x-6,y-22,12,4,'#c0c8d0');rr(b,x-5,y-24,10,2,'#e8d27a');
+  rr(b,x-3,y-30,1,3,'#fff8');rr(b,x+2,y-31,1,4,'#fff8');
+  A.pot(b,x-26,y-16,'#3b8a8a');
 }
-function gatePets(x,y){
-  for(let i=-3;i<=3;i++){R(x+i*8,y-16,3,16,'#c4a06a');R(x+i*8-1,y-18,5,3,'#8b5a2b')}
-  R(x-26,y-20,52,3,'#8b5a2b');
-  R(x-8,y-15,3,15,'#6b4423');R(x+5,y-15,3,15,'#6b4423');
-  R(x-14,y-28,10,8,'#f2d04a');R(x-12,y-30,4,3,'#c8462e');
-  R(x+10,y-12,10,6,'#d9a066');R(x+16,y-16,4,4,'#d9a066');
+function gatePets(x,y){const b=cx;
+  A.fence(b,x-28,y-16,7);
+  blk(b,x-8,y-30,16,16,'#f6ecd2');orb(b,x-1,y-22,5,'#f6d04a');rr(b,x+3,y-23,3,2,'#e8863a');rr(b,x+1,y-24,1,1,OL);
+  A.bush(b,x+18,y-14,'#5fb04a');A.flower(b,x-34,y-6,'#f1a0b0');
 }
-function gateVillage(x,y){
-  R(x-16,y-30,4,30,'#5a3a20');R(x+12,y-30,4,30,'#5a3a20');
-  R(x-18,y-33,36,4,'#8b5a2b');R(x-12,y-37,24,4,'#3f9a4a');
-  R(x-10,y-30,6,8,'#7bc653');R(x+4,y-28,5,7,'#4a9a3c');
+function gateVillage(x,y){const b=cx;
+  blk(b,x-16,y-32,5,32,'#8b5a2b');blk(b,x+11,y-32,5,32,'#8b5a2b');
+  blk(b,x-20,y-40,40,8,'#c4a06a');orb(b,x-10,y-38,4,'#4a9a3c');orb(b,x+8,y-38,4,'#5fb04a');A.flower(b,x-6,y-8,'#f6b0c0');
 }
 G.drawPOI=(x,y,label,zone,sx,sy,big=0)=>{
   const tx=sx!=null?sx:x, ty=sy!=null?sy:y+10;

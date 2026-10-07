@@ -1,37 +1,73 @@
+// Bếp nhà: tường ván tre + ốp gạch, cửa sổ nhìn sông, bếp củi 3 chõ, kệ hũ, tủ lạnh, củi, bao gạo.
 Z.kitchen={bg:mkBg(b=>{
-  for(let y=0;y<150;y+=8)for(let x=0;x<W;x+=16){const off=(y/8%2)*8;rr(b,x+off,y,15,7,['#c07050','#b06040','#d08060'][hs(x,y)%3]);rr(b,x+off,y+7,15,1,'#8a4a30')}
-  // Cửa sổ sông
-  rr(b,18,16,54,48,'#2a1a10');rr(b,21,19,48,42,'#6cb6dd');rr(b,21,40,48,8,'#3f8fc4');
-  rr(b,34,19,3,42,'#5a3a20');rr(b,48,19,3,42,'#5a3a20');
-  rr(b,248,14,8,22,'#5a3a20');rr(b,236,16,32,10,'#f2d04a'); // đèn lồng
-  // Kệ hũ
-  rr(b,286,28,92,7,'#8b5a2b');rr(b,286,64,92,7,'#8b5a2b');
-  for(let i=0;i<5;i++){rr(b,292+i*16,16,12,14,'#2a1a10');rr(b,293+i*16,17,10,12,['#c8462e','#8fc8e0','#d9a066','#6fb04e','#e8d27a'][i])}
-  for(let i=0;i<4;i++){rr(b,296+i*18,52,14,14,'#2a1a10');rr(b,297+i*18,53,12,12,['#a8573a','#5a3a20','#c08a4c','#3b6ea5'][i])}
-  // Bệ bếp
-  rr(b,118,78,150,36,'#5a3a20');rr(b,122,82,142,28,'#8a4a30');
-  rr(b,128,58,40,22,'#a0a8b0');rr(b,132,54,32,10,'#c0c8d0');rr(b,140,48,16,8,'#9098a0');
-  rr(b,186,56,36,24,'#8a9098');rr(b,190,52,28,8,'#b0b8c0');
-  // Củi + lu
-  for(let i=0;i<5;i++)rr(b,24+i*12,132,14,8,'#8b5a2b');
-  for(let i=0;i<4;i++)rr(b,30+i*12,124,14,8,'#a07040');
-  rr(b,330,112,42,46,'#2a1a10');rr(b,333,115,36,40,'#8b5a2b');rr(b,340,122,22,22,'#a07040');
-  // Sàn gỗ
-  rr(b,0,156,W,H-156,'#6b4423');
-  for(let x=0;x<W;x+=18)rr(b,x,156,1,H-156,'#5a3a20');
-  rr(b,0,156,W,4,'#8b5a2b');
+  const W=400,H=230;
+  // tường ván tre + gờ gỗ + ốp gạch xanh
+  rr(b,0,0,W,148,'#ecd29a');
+  for(let x=0;x<W;x+=10){rr(b,x,0,1,96,'#dcbc7c');if(x%30==0)rr(b,x+4,0,1,96,'#f6e2b4')}
+  rr(b,0,96,W,6,'#8b5a2b');rr(b,0,96,W,1,'#c4905a');rr(b,0,101,W,1,'#4a2c16');
+  for(let y=102;y<148;y+=9)for(let x=0;x<W;x+=10){const o=(y%2?0:5);rr(b,x,y,9,8,((x/10|0)+(y/9|0))%2?'#5bb5ae':'#4aa3a0');rr(b,x,y,9,1,'#8fd6cf');rr(b,x,y+7,9,1,'#37827f')}
+  // xà nhà
+  rr(b,0,0,W,9,'#6b4423');rr(b,0,0,W,2,'#8b5a2b');rr(b,0,8,W,1,'#3a2412');
+  for(let x=30;x<W;x+=90){rr(b,x,9,6,6,'#5a3a20');rr(b,x,14,6,1,'#3a2412')}
+  // cửa sổ nhìn sông + rèm
+  blk(b,14,14,62,54,'#7a4a24');rr(b,19,19,52,44,'#8ed0ee');rr(b,19,19,52,14,'#a8dcf2');
+  disc(b,56,28,5,'#ffe27a');rr(b,19,38,52,5,'#7fb06a');
+  [[24,34],[34,32],[62,35]].forEach(([x,y])=>{rr(b,x,y,2,6,'#6b4423');rr(b,x-3,y-3,8,4,'#3f9a4a')});
+  rr(b,19,44,52,19,'#4a9ad0');rr(b,24,50,10,1,'#9ad4f0');rr(b,44,55,14,1,'#9ad4f0');rr(b,58,48,8,1,'#9ad4f0');
+  rr(b,44,19,2,44,'#7a4a24');rr(b,19,40,52,2,'#7a4a24');
+  blk(b,14,12,11,36,'#d8553a');blk(b,65,12,11,36,'#d8553a');rr(b,18,16,1,28,'#f08060');rr(b,69,16,1,28,'#f08060');
+  rr(b,14,34,11,2,'#f2d04a');rr(b,65,34,11,2,'#f2d04a');rr(b,10,10,70,3,'#8b5a2b');
+  blk(b,10,66,70,5,'#a8733a');A.pot(b,38,50);
+  // tranh làng dừa
+  blk(b,86,22,26,20,'#8b5a2b');rr(b,89,25,20,14,'#bfe6f2');rr(b,89,35,20,4,'#f2d04a');rr(b,99,28,2,8,'#6b4423');rr(b,94,26,12,3,'#3f9a4a');
+  // đèn lồng
+  A.lantern(b,100,24);A.lantern(b,196,16,'#f2a82a');A.lantern(b,270,24);
+  // kệ hũ phải
+  blk(b,284,28,96,6,'#8b5a2b');blk(b,284,64,96,6,'#8b5a2b');
+  ['#c8462e','#8fc8e0','#d9a066','#6fb04e','#e8d27a'].forEach((c,i)=>A.jar(b,290+i*18,17,c));
+  ['#a8573a','#5a3a20','#c08a4c','#3b6ea5'].forEach((c,i)=>A.jar(b,294+i*20,53,c));
+  for(let i=0;i<4;i++){rr(b,300+i*18,38,1,8,'#6b4423');orb(b,300+i*18,48,2,i%2?'#e8483a':'#f2f0d8')}
+  // giá treo vá muỗng trên bếp
+  rr(b,126,30,142,3,'#5a3a20');
+  for(let i=0;i<6;i++){const x=136+i*22;rr(b,x,33,1,10,'#6b4423');if(i%2)orb(b,x,46,3,'#b0b8c0');else blk(b,x-3,42,6,8,'#c8643a')}
+  // hậu bếp: mặt bàn đá + lò gạch có 3 miệng lửa + tủ gỗ
+  blk(b,112,86,162,9,'#d8b88a');
+  blk(b,116,95,154,22,'#9a5a3c');
+  for(let y=98;y<116;y+=5)for(let x=118+(y%2)*5;x<268;x+=10)rr(b,x,y,9,1,'#6a3a24');
+  for(let i=0;i<3;i++){const x=134+i*40;rr(b,x,100,24,17,OL);rr(b,x+1,101,22,15,'#1a0e08');rr(b,x+4,110,16,5,'#e8892a');rr(b,x+7,112,10,3,'#ffd86a')}
+  blk(b,116,117,154,35,'#7a4a24');
+  for(let i=0;i<3;i++){const x=122+i*48;blk(b,x,121,44,28,'#8b5a2b');rr(b,x+4,125,36,20,'#9a6a38');rr(b,x+19,132,6,3,'#f2d04a')}
+  // bồn rửa + thớt
+  blk(b,72,86,38,8,'#d8b88a');blk(b,74,94,34,58,'#7a4a24');blk(b,77,98,28,24,'#8b5a2b');blk(b,77,125,28,22,'#8b5a2b');
+  rr(b,92,76,3,10,'#c0c8d0');rr(b,92,76,10,2,'#c0c8d0');rr(b,100,76,2,5,'#c0c8d0');blk(b,78,82,12,5,'#c4a06a');orb(b,83,80,2,'#e8483a');
+  // củi chất đống
+  for(let r=0;r<3;r++)for(let i=0;i<5-r;i++){const x=24+i*10+r*5,y=144-r*8;orb(b,x,y,4,'#a8733a');rr(b,x-1,y-1,2,2,'#d8a468')}
+  // bao gạo + rổ trứng + tủ lạnh + chậu cây
+  A.sack(b,288,134,'#e8d9b0');A.sack(b,303,138,'#d8c090');A.basket(b,318,138,'#f6ecd2');
+  blk(b,336,82,34,68,'#eef3f6');rr(b,337,110,32,2,OL);rr(b,361,90,2,12,'#9098a0');rr(b,361,116,2,18,'#9098a0');
+  rr(b,342,120,4,4,'#d8553a');rr(b,350,126,4,4,'#f2d04a');rr(b,342,90,10,8,'#fff6e4');rr(b,343,92,8,1,'#d8553a');
+  A.pot(b,376,134,'#3b8a8a');A.pot(b,2,134,'#c8643a');
+  // sàn gỗ + chân tường
+  rr(b,0,148,W,8,'#5a3a20');rr(b,0,148,W,1,'#8b5a2b');
+  A.boards(b,0,156,W,H-156,'#7a4e2a','#6f4524');
+  // thảm tròn
+  for(let j=-14;j<=14;j++){const w=Math.sqrt(1-j*j/196)*68|0;for(let i=-w;i<=w;i++){const d=i*i/4624+j*j/196,c=d>.82?'#8a2d1c':d>.58?'#e8c878':d>.3?'#c8462e':'#f2d9a0';rr(b,170+i,196+j,1,1,c)}}
 },400,230),
  draw(t){const S=G.S;
-  for(let i=0;i<3;i++){const h=5+Math.sin(t/80+i)*4;R(146+i*10,70-h,5,h,'#e8892a');R(147+i*10,70-h/2,3,h/2,'#f2d04a')}
+  // ánh lửa ấm
+  R(112,60,162,60,'rgba(255,170,60,'+(.05+Math.sin(t/120)*.015).toFixed(3)+')');
+  for(let i=0;i<3;i++){const x=134+i*40,h=4+Math.sin(t/80+i*2)*3;
+   for(let k=0;k<3;k++){const hh=h+(k==1?3:0);R(x+6+k*6,115-hh,4,hh,'#e8892a');R(x+7+k*6,115-hh/2,2,hh/2,'#ffe27a')}}
   for(let i=0;i<3;i++){const x=132+i*40,y=62,q=S.cooking[i];
-   R(x,y+16,30,16,'#2a1a10');R(x+2,y+18,26,12,'#c0c8d0');R(x+10,y+10,8,8,'#8a9098');
-   if(q){const r=G.RECIPES[q.r],f=i?0:q.t/r.time;R(x,y+4,30,4,'#2a1a10');R(x+1,y+5,28*f,2,'#4f9a45');BUB(x+3,y-16,q.r);
-    if(!i)for(let k=0;k<3;k++){const yy=(t/28+k*9)%16;R(x+6+k*6,y+8-yy,2,2,'#fff8')}}
-   else R(x+8,y+8,12,4,'#e8d27a')}
+   blk(cx,x,y+18,30,14,'#8a929c');rr(cx,x+2,y+20,26,2,'#c0c8d0');
+   blk(cx,x+2,y+8,26,11,'#d9a860');for(let k=0;k<5;k++)rr(cx,x+5+k*5,y+10,1,7,'#a87838');
+   blk(cx,x+5,y+3,20,6,'#e8c878');rr(cx,x+13,y,4,3,'#8b5a2b');
+   if(q){const r=G.RECIPES[q.r],f=i?0:q.t/r.time;R(x,y-5,30,4,OL);R(x+1,y-4,28*f,2,'#4f9a45');BUB(x+3,y-30,q.r);
+    if(!i)for(let k=0;k<3;k++){const yy=(t/28+k*9)%16;R(x+8+k*6,y+1-yy,2,2,'#fff8')}}}
   HOT(124,48,140,70,()=>{G.ui.modal='cook'},{sx:190,sy:130,anim:'stir',dur:.8});
-  // Mẹ lá chuối để món chín
-  R(250,168,120,28,'#3f7a32');R(252,170,116,24,'#4a9a3c');
-  Object.keys(G.RECIPES).forEach((k,i)=>{const n=S.inv[k]||0,x=258+i*28;IM(k,x,174,18,n?1:.35);TS('×'+n,x+9,198,'#fff6e4',7)});
-  if(!S.cooking.length)TS('Chạm chõ để nấu',200,146,'#fff6e4',9);
+  // lá chuối để món chín
+  blk(cx,248,166,124,32,'#3f7a32');for(let k=0;k<7;k++)rr(cx,256+k*16,170,1,24,'#5fb04a');rr(cx,250,181,120,1,'#2f6a2a');
+  Object.keys(G.RECIPES).forEach((k,i)=>{const n=S.inv[k]||0,x=258+i*28;IM(k,x,172,18,n?1:.35);TS('×'+n,x+9,198,'#fff6e4',7)});
+  if(!S.cooking.length)TS('Chạm chõ để nấu',200,144,'#fff6e4',9);
   G.drawDoor(46,188,'farm',46,196);
   G.P.draw(t)}};
