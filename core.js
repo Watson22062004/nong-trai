@@ -173,8 +173,8 @@ G.SP={
 
 // TRẠNG THÁI + LƯU GAME (localStorage)
 G.KEY='xoiBenDua';
-G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2},
-  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0});
+G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2,tra:3,chanh:3,duong:3,da:3},
+  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0,open:false});
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 if(!Array.isArray(G.S.hotbar))G.S.hotbar=Array(8).fill(null);
 // Save cũ chưa có nâng cấp: mở sẵn đủ 6 hàng ruộng để không mất gì
@@ -254,6 +254,7 @@ G.cook=r=>{if(!G.canCook(r))return G.msg('Thiếu nguyên liệu');if(G.S.cookin
 G.updateKitchen=dt=>{const S=G.S,q=S.cooking[0];
   if(q){q.t+=dt*G.kitSpeed();if(q.t>=G.RECIPES[q.r].time){G.add(q.r);G.potDone={t:performance.now(),r:q.r};S.cooking.shift()}}
   G.updateCustomers&&G.updateCustomers(dt);
+  G.updateStall&&G.updateStall(dt);
   S.clock+=dt;if(S.clock>=120){S.clock=0;S.day++}};
 
 // ENGINE VẼ: canvas 384x216 (16:9), hàm vẽ, vùng chạm (hotspot). Từng khu nằm trong zones.js
@@ -341,7 +342,7 @@ function poiGate(x,y,lb){const b=cx;
   blk(b,x-30,y-44,60,9,'#c0402a');blk(b,x-22,y-50,44,7,'#d8553a');
   poiSign(x,y-30,40,lb);A.flower(b,x-34,y-6,'#f6b0c0');A.bush(b,x+28,y-12)}
 G.drawPOI=(x,y,label,zone,sx,sy)=>{
-  const k={farm:[poiFarm,76,62],market:[poiMarket,92,58],shop:[poiShop,84,64],pets:[poiPets,90,60]}[zone]||[poiGate,60,50];
+  const k={farm:[poiFarm,76,62],market:[poiMarket,92,58],shop:[poiShop,84,64],stall:[poiShop,84,64],pets:[poiPets,90,60]}[zone]||[poiGate,60,50];
   k[0](x,y,label);HOT(x-k[1]/2,y-k[2],k[1],k[2],()=>G.goZone(zone),{sx:sx??x,sy:sy??y+10})};
 // Cửa gỗ trong nhà (bếp / quán) — không dùng cổng ngoài trời
 G.drawDoor=(x,y,zone,sx,sy)=>{

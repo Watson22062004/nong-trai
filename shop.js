@@ -97,7 +97,7 @@ Z.shop={bg:mkBg(b=>{
      for(let k=0;k<2;k++){const yy=(t/45+k*7)%12;R(tb.x-2+side*5+Math.sin(t/200+k*2)*2,base-yy,2,2,'rgba(255,255,255,'+(.6-yy/24).toFixed(2)+')')}
      TS('♥',c.x+Math.sin(t/200)*3,c.y-34-(t/60)%8,'#e2674a',8)}
    else if(c.st==='leave'){if(c.mad)TS('!',c.x,top-4+Math.sin(t/60)*1.5,'#e2674a',12);else if(c.age<1.2)TS('♥',c.x,top-4-c.age*14,'#e2674a',9)}});
-  if(!S.customers.length)TS('Chờ khách…',192,86+Math.sin(t/500)*1.5,'#fff6e4',8);
+  if(!S.customers.length)TS(S.open?'Chờ khách…':'Đang đóng cửa — chuẩn bị món rồi bấm Mở cửa',192,86+Math.sin(t/500)*1.5,'#fff6e4',8);
   HOT(172,14,40,34,()=>G.walk([[RS.gateOut.x,RS.gateOut.y],[RS.gateIn.x,RS.gateIn.y],[192,60]],()=>G.goZone('hub')),{sx:G.P.x,sy:G.P.y});
   G.P.draw(t);
   if(G.carry){const bob=Math.sin(t/120)*1.5;IM(G.carry,G.P.x-8,G.P.y-48+bob,16);TS('✦',G.P.x+8+Math.sin(t/90)*3,G.P.y-46+Math.cos(t/110)*3,'#ffe27a',7)}}};

@@ -269,7 +269,7 @@ addEventListener('pointerdown',e=>{
   const t=e.target;if(!t||!t.closest)return;
   if(t.id==='cv'){if(!G.ui.modal&&G.P.st!=='work')SND.tap();return}
   const b=t.closest('button');if(!b||b.id==='sndbtn')return;
-  const d=b.dataset;if(d.modal!==undefined||['buy','sell','sellall','animal','go','add','rows','kit','harvestall','again'].includes(d.act))return;
+  const d=b.dataset;if(d.modal!==undefined||['buy','sell','sellall','animal','go','add','rows','kit','harvestall','again','shopopen','shopclose'].includes(d.act))return;
   SND.tick(d.act==='slot'?1.15:1)},true);
 ['pointerup','touchend','click','keydown'].forEach(ev=>addEventListener(ev,unlock,true));
 document.addEventListener('visibilitychange',()=>{if(!ac)return;if(document.hidden)ac.suspend();else if(on)ac.resume()});

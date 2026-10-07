@@ -429,8 +429,8 @@ G.SP={
 
 // TRẠNG THÁI + LƯU GAME (localStorage)
 G.KEY='xoiBenDua';
-G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2},
-  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0});
+G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2,tra:3,chanh:3,duong:3,da:3},
+  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0,open:false});
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 if(!Array.isArray(G.S.hotbar))G.S.hotbar=Array(8).fill(null);
 // Save cũ chưa có nâng cấp: mở sẵn đủ 6 hàng ruộng để không mất gì
@@ -510,6 +510,7 @@ G.cook=r=>{if(!G.canCook(r))return G.msg('Thiếu nguyên liệu');if(G.S.cookin
 G.updateKitchen=dt=>{const S=G.S,q=S.cooking[0];
   if(q){q.t+=dt*G.kitSpeed();if(q.t>=G.RECIPES[q.r].time){G.add(q.r);G.potDone={t:performance.now(),r:q.r};S.cooking.shift()}}
   G.updateCustomers&&G.updateCustomers(dt);
+  G.updateStall&&G.updateStall(dt);
   S.clock+=dt;if(S.clock>=120){S.clock=0;S.day++}};
 
 // ENGINE VẼ: canvas 384x216 (16:9), hàm vẽ, vùng chạm (hotspot). Từng khu nằm trong zones.js
@@ -597,7 +598,7 @@ function poiGate(x,y,lb){const b=cx;
   blk(b,x-30,y-44,60,9,'#c0402a');blk(b,x-22,y-50,44,7,'#d8553a');
   poiSign(x,y-30,40,lb);A.flower(b,x-34,y-6,'#f6b0c0');A.bush(b,x+28,y-12)}
 G.drawPOI=(x,y,label,zone,sx,sy)=>{
-  const k={farm:[poiFarm,76,62],market:[poiMarket,92,58],shop:[poiShop,84,64],pets:[poiPets,90,60]}[zone]||[poiGate,60,50];
+  const k={farm:[poiFarm,76,62],market:[poiMarket,92,58],shop:[poiShop,84,64],stall:[poiShop,84,64],pets:[poiPets,90,60]}[zone]||[poiGate,60,50];
   k[0](x,y,label);HOT(x-k[1]/2,y-k[2],k[1],k[2],()=>G.goZone(zone),{sx:sx??x,sy:sy??y+10})};
 // Cửa gỗ trong nhà (bếp / quán) — không dùng cổng ngoài trời
 G.drawDoor=(x,y,zone,sx,sy)=>{
@@ -824,9 +825,10 @@ const leave=c=>{const R=G.REST,p=[];if(c.y<92)p.push([c.x,96]);if(c.x!==192)p.pu
 const mad=c=>{c.mad=true;G.addRep(-5);leave(c)};
 G.updateCustomers=dt=>{const S=G.S,R=G.REST,C=S.customers,F=G.CFG;
   const d=G.delivering;if(d&&d.st==='serving'&&G.P.st==='idle'&&!G.P.task)G.cancelDeliver();
-  S.spawn+=dt;
+  if(G.ui.zone!=='shop')return; // không ở quán → khách đứng yên, không đến thêm, không bực (nấu/trồng trọt xong rồi hãy vào mở cửa)
+  if(S.open)S.spawn+=dt;
   const qn=C.filter(c=>c.st==='in'||c.st==='queue'||c.st==='order').length;
-  if(S.spawn>=F.customerEvery*(1.3-.1*G.stars())&&C.length<F.maxCustomers&&qn<F.maxQueue){S.spawn=0;const ks=Object.keys(G.RECIPES).filter(G.unlocked);C.push({want:ks[Math.random()*ks.length|0],p:F.patienceOrder,st:'in',x:R.door.x,y:R.door.y,sk:Math.random()*4|0,seat:-1,dir:0,path:[]})}
+  if(S.open&&S.spawn>=F.customerEvery*(1.3-.1*G.stars())&&C.length<F.maxCustomers&&qn<F.maxQueue){S.spawn=0;const ks=Object.keys(G.RECIPES).filter(G.unlocked);C.push({want:ks[Math.random()*ks.length|0],p:F.patienceOrder,st:'in',x:R.door.x,y:R.door.y,sk:Math.random()*4|0,seat:-1,dir:0,path:[]})}
   let qi=0;
   C.forEach(c=>{
     if(c._s!==c.st){c._s=c.st;c.age=0}else c.age+=dt;c.life=(c.life||0)+dt;
@@ -834,29 +836,36 @@ G.updateCustomers=dt=>{const S=G.S,R=G.REST,C=S.customers,F=G.CFG;
       const tx=R.q.x-qi*26,ty=R.q.y+(qi?4:0),key=tx+','+ty;
       if(c.qk!==key){c.qk=key;c.path=[[tx,ty]]}
       c.st=mv(c,dt)?(qi?'queue':'order'):'in';qi++;
-      if(c.st!=='in'){c.p-=dt;if(c.p<=0)mad(c)}}
+      if(c.st==='order'&&c.age>1.5)G.takeOrder(c,true); // tự nhận order sau 1,5s (chạm vào khách để nhận ngay)
+      else if(c.st!=='in'){c.p-=dt;if(c.p<=0)mad(c)}}
     else if(c.st==='toseat'){if(mv(c,dt)){c.st='wait';c.p=F.patience;c.dir=0}}
     else if(c.st==='wait'){c.p-=dt;if(c.p<=0)mad(c)}
     else if(c.st==='eat'){c.eatT-=dt;if(c.eatT<=0){S.money+=c.pay;S.served++;G.addRep(c.fast?3:2);{const nw=Object.keys(G.RECIPES).filter(k=>G.RECIPES[k].unlock===S.served).map(k=>G.RECIPES[k].n);if(nw.length)G.msg('Mở khoá món mới: '+nw.join(', ')+'!')}G.float('+'+c.pay,c.x,c.y-30,'#f2d04a');G.spark(c.x,c.y-20,'#f2d04a',8,100);leave(c)}}
     else if(c.st==='leave'){if(mv(c,dt))c.dead=true}});
   S.customers=S.customers.filter(c=>!c.dead)};
 // Nhận order: khách ở quầy chọn món rồi đi ngồi bàn
-G.takeOrder=c=>{if(c.st!=='order')return;
+G.takeOrder=(c,auto)=>{if(c.st!=='order')return;
   const used=G.S.customers.filter(x=>x.seat>=0).map(x=>x.seat),free=G.REST.seats.map((s,i)=>i).filter(i=>!used.includes(i));
-  if(!free.length)return G.msg('Hết bàn rồi!');
+  if(!free.length)return auto?0:G.msg('Hết bàn rồi!');
   const i=free[Math.random()*free.length|0],s=G.REST.seats[i];
   c.seat=i;c.st='toseat';c.qk=null;c.path=[[s.x,96],[s.x,s.y]];c.p=G.CFG.patience;
   G.msg('Khách gọi '+G.RECIPES[c.want].n+' — ra bếp nấu nhé!')};
 // Mang món ra bàn
 G.cancelDeliver=()=>{const c=G.delivering;if(c&&c.st==='serving'){G.add(c.want);c.st='wait'}G.carry=null;G.delivering=null};
 G.deliver=c=>{if(c.st!=='wait')return;const r=G.RECIPES[c.want];
-  if(!G.has(c.want))return G.msg('Chưa có '+r.n+' — chạm bếp để nấu');
+  if(!G.has(c.want)){G.msg('Chưa có '+r.n+' — nấu món này nhé');G.ui.rec=c.want;G.ui.pot={};G.ui.modal='cook';G.refreshUI&&G.refreshUI();return}
   if(G.delivering)G.cancelDeliver();
   const R=G.REST,s=R.seats[c.seat];
   c.st='serving';c.fast=c.p/G.CFG.patience>.5;c.pay=Math.round(r.price*(c.fast?1.2:1)*(1+.05*Math.max(0,G.stars()-3)));G.add(c.want,-1);G.carry=c.want;G.delivering=c;
   G.walk([[R.gateOut.x,R.gateOut.y],[R.gateIn.x,R.gateIn.y],[s.x,96]],()=>{
     G.P.work('serve',.5,()=>{G.carry=null;G.delivering=null;c.st='eat';c.eatT=G.CFG.eatTime;
       G.walk([[R.gateIn.x,R.gateIn.y],[R.gateOut.x,R.gateOut.y],[R.home.x,R.home.y]])})})};
+
+// MỞ / ĐÓNG CỬA: chỉ khi mở cửa khách mới đến. Đóng cửa → khách đang có trong quán vẫn được phục vụ nốt.
+G.openShop=()=>{const S=G.S;if(S.open)return;S.open=true;S.spawn=Math.max(S.spawn,G.CFG.customerEvery*.75);
+  const ready=Object.keys(G.RECIPES).filter(k=>S.inv[k]>0).length;
+  G.msg(ready?'Mở cửa! Chào đón khách nhé':'Mở cửa rồi — chưa có món sẵn, nhớ nấu nhé!');G.snd&&G.snd.bell&&G.snd.bell()};
+G.closeShop=()=>{const S=G.S;if(!S.open)return;S.open=false;G.msg(S.customers.length?'Đóng cửa — phục vụ nốt khách trong quán':'Đã đóng cửa')};
 
 
 /* ===== farm.js ===== */
@@ -1145,10 +1154,159 @@ Z.shop={bg:mkBg(b=>{
      for(let k=0;k<2;k++){const yy=(t/45+k*7)%12;R(tb.x-2+side*5+Math.sin(t/200+k*2)*2,base-yy,2,2,'rgba(255,255,255,'+(.6-yy/24).toFixed(2)+')')}
      TS('♥',c.x+Math.sin(t/200)*3,c.y-34-(t/60)%8,'#e2674a',8)}
    else if(c.st==='leave'){if(c.mad)TS('!',c.x,top-4+Math.sin(t/60)*1.5,'#e2674a',12);else if(c.age<1.2)TS('♥',c.x,top-4-c.age*14,'#e2674a',9)}});
-  if(!S.customers.length)TS('Chờ khách…',192,86+Math.sin(t/500)*1.5,'#fff6e4',8);
+  if(!S.customers.length)TS(S.open?'Chờ khách…':'Đang đóng cửa — chuẩn bị món rồi bấm Mở cửa',192,86+Math.sin(t/500)*1.5,'#fff6e4',8);
   HOT(172,14,40,34,()=>G.walk([[RS.gateOut.x,RS.gateOut.y],[RS.gateIn.x,RS.gateIn.y],[192,60]],()=>G.goZone('hub')),{sx:G.P.x,sy:G.P.y});
   G.P.draw(t);
   if(G.carry){const bob=Math.sin(t/120)*1.5;IM(G.carry,G.P.x-8,G.P.y-48+bob,16);TS('✦',G.P.x+8+Math.sin(t/90)*3,G.P.y-46+Math.cos(t/110)*3,'#ffe27a',7)}}};
+
+
+/* ===== stall.js ===== */
+
+// stall.js — XE ĐẨY: màn bán góc nhìn thứ nhất (kiểu Papa's / Good Pizza).
+// Khách đứng trước quầy gọi món → bạn tự chạm khay nguyên liệu để đặt lên đĩa → bấm Giao.
+// PHẠT THẬT: đặt sai nguyên liệu (không thuộc món / thừa) → món HỎNG, chỉ còn cách Đổ đi và MẤT hết nguyên liệu đã đặt.
+// Nguyên liệu lấy thẳng từ kho (ruộng + chợ) nên làm nông có ý nghĩa trực tiếp. Công thức dùng chung G.RECIPES.
+(()=>{
+const MENU=['tra_chanh','ca_phe_sua','banh_mi','goi_cuon']; // món bán được ở xe đẩy (mở khoá theo số khách đã phục vụ: G.unlocked)
+const ORD=['tra','chanh','duong','da','ca_phe','sua_dac','bot_mi','thit_heo','ca_rot','rau_thom','banh_trang','tom','bun']; // thứ tự khay
+const SK=['char2_walk','char3_walk','char5_walk','char1_walk'];
+const st=()=>G.S.stall||(G.S.stall={q:0,cur:null,plate:[],bad:false,spawn:0,gap:0});
+G.stallState=st;
+const menu=()=>MENU.filter(k=>G.RECIPES[k]&&G.unlocked(k));
+const canMake=k=>Object.entries(G.RECIPES[k].need).every(([i,n])=>G.has(i,n));
+const nm=i=>(G.ITEMS[i]&&G.ITEMS[i].n)||i;
+const cnt=(a,i)=>a.filter(x=>x===i).length;
+const sn=(f,...a)=>{try{G.snd&&G.snd[f]&&G.snd[f](...a)}catch(e){}};
+const flash={};
+// Khay hiển thị: đủ nguyên liệu cho các món đã mở khoá, nếu < 8 khay thì thêm khay "gây nhiễu" để việc chọn có ý nghĩa
+const trays=()=>{const need=new Set();menu().forEach(k=>Object.keys(G.RECIPES[k].need).forEach(i=>need.add(i)));
+  const list=ORD.filter(i=>need.has(i));for(const i of ORD){if(list.length>=8)break;if(!list.includes(i))list.push(i)}
+  return ORD.filter(i=>list.includes(i))};
+const layout=n=>{const cols=n<=8?n:Math.ceil(n/2),rows=n<=8?1:2,gap=4,w=Math.min(46,Math.floor((356-(cols-1)*gap)/cols)),h=rows===1?34:18,
+  x0=Math.round((384-(cols*w+(cols-1)*gap))/2),y0=rows===1?125:123;
+  return Array.from({length:n},(_,i)=>{const r=rows===1||i<cols?0:1,c=rows===1||i<cols?i:i-cols;return{x:x0+c*(w+gap),y:y0+r*(h+4),w,h}})};
+const complete=s=>{const c=s.cur;if(!c)return false;return Object.entries(G.RECIPES[c.want].need).every(([i,n])=>cnt(s.plate,i)===n)};
+
+// ===== Luật chơi =====
+function pick(it){
+  const s=st(),c=s.cur;
+  if(!c||c.out||c.age<.7)return G.msg('Chờ khách ra quầy đã');
+  if(s.bad)return G.msg('Món hỏng rồi — bấm Đổ đi');
+  if(!G.has(it))return G.msg('Hết '+nm(it)+' — ra Chợ mua thêm');
+  const need=G.RECIPES[c.want].need[it]||0,have=cnt(s.plate,it);
+  G.add(it,-1);s.plate.push(it);flash[it]={t:performance.now(),ok:have<need};
+  if(have>=need){s.bad=true;s.shake=performance.now();G.msg('Sai rồi! '+nm(it)+' làm hỏng món — Đổ đi (mất nguyên liệu)');sn('nope');sn('clank')}
+  else sn('ingredient',it);
+}
+function trash(){
+  const s=st();if(!s.plate.length)return;
+  const n=s.plate.length;s.plate=[];s.bad=false;G.msg('Đổ đi '+n+' nguyên liệu');sn('pourAway');
+}
+function serve(){
+  const S=G.S,s=st(),c=s.cur;if(!c||c.out||c.age<.7)return;
+  if(s.bad)return G.msg('Món hỏng rồi — bấm Đổ đi');
+  if(!complete(s))return G.msg('Chưa đủ nguyên liệu cho món này');
+  const r=G.RECIPES[c.want],fast=c.p/c.pmax>.5,pay=Math.round(r.price*(fast?1.2:1)*(1+.05*Math.max(0,G.stars()-3)));
+  S.money+=pay;S.served++;G.addRep(fast?3:2);s.plate=[];c.out='happy';c.ot=0;
+  G.float('+'+pay,192,64,'#f2d04a');G.spark(192,90,'#f2d04a',10,100);sn('plate');
+  const nw=MENU.filter(k=>G.RECIPES[k].unlock===S.served).map(k=>G.RECIPES[k].n);
+  if(nw.length)G.msg('Mở khoá món mới: '+nw.join(', ')+'!');
+}
+function decline(){const s=st(),c=s.cur;if(!c||c.out)return;c.out='decline';c.ot=0;G.addRep(-1);G.msg('Đã từ chối khách')}
+function newCustomer(s){
+  const ks=menu();if(!ks.length)return;const mk=ks.filter(canMake),pool=mk.length&&Math.random()<.85?mk:ks,want=pool[Math.random()*pool.length|0];
+  const n=Object.values(G.RECIPES[want].need).reduce((a,b)=>a+b,0),pmax=18+7*n;
+  s.cur={want,p:pmax,pmax,sk:Math.random()*4|0,age:0};sn('bell');
+}
+G.updateStall=dt=>{
+  if(G.ui.zone!=='stall')return; // không ở xe đẩy → khách đứng yên (không đến thêm, không bực)
+  const S=G.S,s=st(),F=G.CFG,c=s.cur;
+  if(S.open&&s.q<3){s.spawn+=dt;if(s.spawn>=F.customerEvery*(1.3-.1*G.stars())){s.spawn=0;s.q++}}
+  if(c){c.age=(c.age||0)+dt;
+    if(c.out){c.ot=(c.ot||0)+dt;if(c.ot>.9){s.cur=null;s.gap=1.1}}
+    else if(c.age>.7){c.p-=dt;if(c.p<=0){c.out='mad';c.ot=0;G.addRep(-5);G.msg('Khách bực bỏ về! (−5 uy tín)')}}
+  }else if(s.q>0){s.gap=(s.gap||0)-dt;if(s.gap<=0){s.q--;newCustomer(s)}}
+};
+// Mở/đóng bán: dùng chung G.openShop/G.closeShop (cờ G.S.open), riêng phần xe đẩy
+{const _o=G.openShop,_c=G.closeShop;
+G.openShop=()=>{if(G.ui.zone!=='stall')return _o&&_o();const S=G.S,s=st();if(S.open)return;S.open=true;s.spawn=0;if(!s.cur&&s.q<1)s.q=1;
+  G.msg(menu().some(canMake)?'Mở bán! Làm đúng món khách gọi nhé':'Mở bán — chưa đủ nguyên liệu, ra Chợ mua nhé!');sn('bell')};
+G.closeShop=()=>{if(G.ui.zone!=='stall')return _c&&_c();const S=G.S,s=st();if(!S.open)return;S.open=false;s.q=0;
+  G.msg(s.cur&&!s.cur.out?'Đóng cửa — phục vụ nốt khách này':'Đã đóng cửa')}}
+
+// ===== Vẽ =====
+const bg=mkBg(b=>{
+  rr(b,0,0,384,98,'#a8dcf2');rr(b,0,0,384,24,'#8ed0ee');
+  [[-4,36,72,'#e8c888'],[64,46,58,'#d8a878'],[118,32,78,'#f0d8a0'],[192,44,62,'#c8d8a0'],[250,38,74,'#e8b8a0'],[320,48,70,'#d8c090']].forEach(([x,y,w,c])=>{
+    blk(b,x,y,w,82-y,c);for(let wx=x+9;wx<x+w-14;wx+=19)for(let wy=y+9;wy<68;wy+=21)blk(b,wx,wy,10,12,'#8ec8e0')});
+  rr(b,0,82,384,16,'#cdb27c');for(let y=84;y<98;y+=6)for(let x=(y/6%2)*7;x<384;x+=14)rr(b,x,y,13,5,['#d8c090','#c4a870','#dcc898'][(x+y)%3]);
+  // mái hiên
+  for(let i=0;i<24;i++){const c=i%2?'#fffaf0':'#c8462e';rr(b,i*16,0,16,16,c);rr(b,i*16+2,16,12,4,c);rr(b,i*16+4,20,8,2,c)}
+  rr(b,0,0,384,1,OL);rr(b,0,22,384,5,'rgba(0,0,0,.12)');
+  // quầy: mặt quầy, thanh khay, mặt trước
+  rr(b,0,96,384,4,'#6b4423');rr(b,0,100,384,18,'#e2c496');for(let x=0;x<384;x+=48)rr(b,x,100,1,18,'#cfae7c');rr(b,0,100,384,1,'#f2dcb4');
+  rr(b,0,118,384,3,'#a8733a');rr(b,0,121,384,42,'#8b5a2b');for(let x=0;x<384;x+=12)rr(b,x,121,1,42,'#7a4a24');
+  rr(b,0,163,384,3,'#5a3a20');rr(b,0,166,384,50,'#a8733a');for(let x=0;x<384;x+=24){rr(b,x,166,1,50,'#8a5a30');rr(b,x+1,166,1,50,'#c4905a')}
+  blk(b,0,0,7,166,'#8b5a2b');blk(b,377,0,7,166,'#8b5a2b');
+},384,216);
+
+const drawCust=(c,x,feet,k,t,al,mv,ox=0)=>{const ci=G.loadImg(G.ASSETS[SK[c.sk&3]]);if(!ci||!ci.complete)return;
+  const sz=16*k,fr=mv?((t/110)|0)%4:0,row=mv?1:0,bob=mv?-Math.abs(Math.sin(t/110))*2:0;
+  cx.globalAlpha=al*.3;R(x-sz/2.6,feet-2,sz/1.3,3,'#000');cx.globalAlpha=al;
+  cx.imageSmoothingEnabled=false;cx.drawImage(ci,fr*16,row*16,16,16,Math.round(x-sz/2+ox),Math.round(feet-sz+bob),sz,sz);cx.globalAlpha=1};
+const btn=(x,y,w,h,label,col,en,fn,pulse)=>{const t=performance.now(),k=pulse?Math.round(Math.sin(t/140)*1.5):0;
+  blk(cx,x-k,y-k,w+k*2,h+k*2,en?col:'#9a9a9a');TS(label,x+w/2,y+h/2+3,en?'#fff':'#e4e4e4',8);HOT(x,y,w,h,fn)};
+
+Z.stall={fp:true,bg,draw(t){
+  const S=G.S,s=st(),c=s.cur,open=!!S.open;
+  // khách xếp hàng phía sau (mờ)
+  for(let i=0;i<Math.min(s.q,2);i++)drawCust({sk:i+1},i?262:128,90,3,t,.5,false);
+  // khách đang ở quầy: bước tới từ bên phải, ra về bên trái
+  if(c){const arr=c.age<.7&&!c.out,x=c.out?192-eo(c.ot/.9)*200:192+(1-eo(c.age/.7))*170,
+      al=c.out?Math.max(0,Math.min(1,(.9-c.ot)/.4)):1,shake=c.out==='mad'&&c.ot<.6?Math.sin(t/30)*1.6:0;
+    drawCust(c,x,98,4,t,al,arr||!!c.out,shake);
+    if(!c.out&&!arr){const f=Math.max(0,c.p/c.pmax);R(x-21,27,42,5,OL);R(x-20,28,40*f,3,f>.5?'#7bc96f':f>.25?'#f2a82a':(Math.sin(t/90)>0?'#e2674a':'#ffb0a0'));
+      BUB(x+26,32,c.want);}
+    if(c.out==='happy')TS('♥',x,34-c.ot*22,'#e2674a',13);
+    if(c.out==='mad')TS('!',x,34,'#e2674a',15);
+    // phiếu gọi món
+    if(!c.out){const r=G.RECIPES[c.want],X=8,Y=28,Wd=92,Ht=58;
+      blk(cx,X,Y,Wd,Ht,'#fffaf0');R(X+2,Y+2,Wd-4,11,'#c8462e');TS(r.n,X+Wd/2,Y+11,'#fff',7);
+      const es=Object.entries(r.need),cw=Math.min(23,Math.floor((Wd-4)/es.length)),x0=X+Math.round((Wd-cw*es.length)/2);
+      es.forEach(([it,n],i)=>{const rem=n-cnt(s.plate,it),ix=x0+i*cw+Math.round((cw-16)/2);IM(it,ix,Y+16,16);
+        TS(rem<=0?'✓':'×'+rem,x0+i*cw+cw/2,Y+43,rem<=0?'#9be08a':(G.S.inv[it]||0)<rem?'#ff8a70':'#fff6e4',7)});
+      IM('coin',X+Wd/2-14,Y+46,10);T(String(r.price),X+Wd/2+6,Y+55,'#2a1a10',7)}
+  }
+  // đĩa trên quầy
+  const px=192,py=108,bad=s.bad,sh=bad&&performance.now()-(s.shake||0)<400?Math.sin(t/25)*2:0;
+  ell(cx,px,py+3,42,7,'rgba(0,0,0,.25)');ell(cx,px,py,41,7,OL);ell(cx,px,py,39,6,bad?'#f2b0a0':'#fffaf0');ell(cx,px,py,31,4,bad?'#e89080':'#efe6d0');
+  const n=s.plate.length,sp=Math.min(14,66/Math.max(1,n));
+  s.plate.forEach((it,i)=>IM(it,Math.round(px-(n-1)*sp/2-7+sh),py-13+(i%2?-1:1),14,bad?.6:1));
+  if(bad)TS('HỎNG! Bấm Đổ đi',px,92,'#ff7a60',8);
+  else if(c&&!c.out&&!n&&c.age>.7)T('Chạm khay bên dưới để lấy nguyên liệu',px,109,'#a8844a',6);
+  // khay nguyên liệu
+  const tl=trays(),ly=layout(tl.length),now=performance.now();
+  tl.forEach((it,i)=>{const b=ly[i],have=S.inv[it]||0,f=flash[it],on=f&&now-f.t<380;
+    blk(cx,b.x,b.y,b.w,b.h,on?(f.ok?'#bff0b8':'#f6a898'):'#efe6cc');
+    if(b.h>=30){IM(it,b.x+Math.round(b.w/2)-10,b.y+2,20,have?1:.35);T(nm(it).slice(0,9),b.x+b.w/2,b.y+b.h-3,have?'#5a3a20':'#a09078',6);
+      R(b.x+b.w-15,b.y+2,13,9,have?'#c8462e':'#8a8a8a');T('×'+have,b.x+b.w-8.5,b.y+9,'#fff',6)}
+    else{IM(it,b.x+3,b.y+3,12,have?1:.35);T(nm(it).slice(0,8),b.x+17,b.y+8,have?'#5a3a20':'#a09078',6,'left');T('×'+have,b.x+17,b.y+16,have?'#c8462e':'#8a8a8a',7,'left')}
+    HOT(b.x,b.y,b.w,b.h,()=>pick(it))});
+  // nút thao tác
+  const live=!!c&&!c.out&&c.age>.7;
+  btn(14,168,62,18,'Đổ đi','#c8462e',n>0,trash);
+  btn(140,166,104,20,'Giao món','#3b8a40',live&&!bad&&complete(s),serve,live&&!bad&&complete(s));
+  btn(306,168,62,18,'Từ chối','#6a6a7a',live,decline);
+  // bảng mở/đóng bán + về làng
+  blk(cx,322,40,58,18,open?'#3b8a40':'#a8301e');TS(open?'ĐANG BÁN':'ĐÓNG CỬA',351,52,'#fff',7);
+  HOT(322,40,58,18,()=>open?G.closeShop():G.openShop());
+  blk(cx,322,62,58,14,'#6b4423');TS('← Về làng',351,72,'#ffe7a8',7);
+  HOT(322,62,58,14,()=>{G.goZone('hub');Object.assign(G.P,{x:598,y:188,tx:598,ty:188});G.updateCam()});
+  // trạng thái
+  if(!open&&!c){TS('Xe đang đóng cửa',211,56,'#fff6e4',8);TS('Bấm bảng bên phải để mở bán',211,67,'#ffe27a',7)}
+  else if(open&&!c)TS('Chờ khách…',192,60+Math.sin(t/500)*1.5,'#fff6e4',8);
+}};
+})();
 
 
 /* ===== hub.js ===== */
@@ -1212,7 +1370,7 @@ Z.hub={bg:mkBg(b=>{
   const bx=((t/70)%720)-50;blk(cx,bx,314,40,9,'#a8733a');blk(cx,bx+10,306,18,9,'#e8d27a');rr(cx,bx+30,300,10,3,'#f2d9a0');rr(cx,bx+33,297,4,3,'#f2d9a0');
   dog(150+Math.sin(t/700)*40,158,t);cat(380,152,t);
   G.drawPOI(44,170,'Ruộng nhà','farm',44,184);
-  G.drawPOI(598,170,'Nhà hàng','shop',598,184);
+  G.drawPOI(598,170,'Xe đẩy','stall',598,184);
   G.drawPOI(250,66,'Chợ đầu mối','market',250,82);
   G.drawPOI(358,66,'Thú cưng','pets',358,82);
   G.P.draw(t)}};
@@ -1322,7 +1480,7 @@ const acts={seed:id=>{G.ui.seed=id;G.hold('hat_'+id)},hold:id=>G.hold(id),unhold
   if(!id){G.unhold();return}
   if(!G.S.inv[id]&&!id.startsWith('hat_')){G.msg('Hết '+(G.ITEMS[id]?.n||id));return}
   G.hold(id)},
- animal:G.buyAnimal,rows:()=>G.buyRow(),kit:()=>G.buyKit(),harvestall:()=>G.harvestAll(),
+ animal:G.buyAnimal,rows:()=>G.buyRow(),kit:()=>G.buyKit(),harvestall:()=>G.harvestAll(),shopopen:()=>G.openShop(),shopclose:()=>G.closeShop(),
  again:()=>{const U=G.ui,k=U.last;if(!k||!G.unlocked(k))return;const n0=G.S.cooking.length;G.cook(k);if(G.S.cooking.length>n0){U.rec=k;U.pot={};fxk('cook',k);G.P.work('stir',.6)}},feed:i=>G.feed(+i),collect:i=>G.collect(+i),buy:G.buy,
  sell:id=>G.sell(id),sellall:id=>G.sell(id,1),rec:id=>{if(!G.unlocked(id))return G.msg('Phục vụ '+G.RECIPES[id].unlock+' khách để mở khoá '+G.RECIPES[id].n);G.ui.rec=id;G.ui.pot={}},rcat:id=>{G.ui.rcat=id},itab:id=>{G.ui.itab=id},clear:()=>{G.ui.pot={}},
  add:id=>{const U=G.ui,r=G.RECIPES[U.rec];U.pot=U.pot||{};
@@ -1335,13 +1493,13 @@ const acts={seed:id=>{G.ui.seed=id;G.hold('hat_'+id)},hold:id=>G.hold(id),unhold
  go:()=>{const U=G.ui,r=G.RECIPES[U.rec];if(!r)return;
   if(!Object.entries(r.need).every(([k,n])=>(U.pot[k]||0)>=n))return G.msg('Chưa đủ nguyên liệu');
   const n0=G.S.cooking.length;G.cook(U.rec);if(G.S.cooking.length>n0){U.last=U.rec;U.pot={};fxk('cook',U.rec);G.P.work('stir',.6)}},reset:()=>confirm('Xoá toàn bộ tiến trình?')&&(G.reset(),G.ui.modal=null)};
-const ZN={farm:'Trang trại',market:'Chợ đầu mối',kitchen:'Nhà bếp',shop:'Nhà hàng',hub:'Bến Dừa',pets:'Thú cưng'};
+const ZN={farm:'Trang trại',market:'Chợ đầu mối',kitchen:'Nhà bếp',shop:'Nhà hàng',stall:'Xe đẩy',hub:'Bến Dừa',pets:'Thú cưng'};
 function ui(){const S=G.S,z=G.ui.zone;
  $('#hud').innerHTML=`<div class="left"><span class="stat">${G.ic('coin')}<b>${S.money}</b></span><span class="stat">${G.ic('sun')}<b>Ngày ${S.day}</b></span><span class="stat">${G.ic('face')}<b>${S.served}</b></span><span class="stat">${G.ic('star')}<b>${G.stars()}</b></span></div><span class="zonepill">${ZN[z]||z}</span>`;
  $('#toast').textContent=G.msgText;
  const ready=S.plots.filter(p=>p&&p.t>=G.CROPS[p.crop].time).length+S.animals.filter(a=>a.ready).length;
  const rb=$('#readybd'); if(rb) rb.textContent=ready||'';
- const qk=$('#quick'),qh=z==='farm'&&ready&&!G.ui.modal?`<button class="btn gold" data-act="harvestall">Thu hoạch hết (${ready})</button>`:'';if(qk._h!==qh){qk.innerHTML=qh;qk._h=qh}
+ const qk=$('#quick'),qh=z==='farm'&&ready&&!G.ui.modal?`<button class="btn gold" data-act="harvestall">Thu hoạch hết (${ready})</button>`:z==='shop'&&!G.ui.modal?(S.open?`<button class="btn" data-act="shopclose">Đóng cửa${S.customers.length?` (còn ${S.customers.length} khách)`:''}</button>`:`<button class="btn gold" data-act="shopopen">Mở cửa đón khách</button>`):'';if(qk._h!==qh){qk.innerHTML=qh;qk._h=qh}
  // Thanh 8 ô cùng kích thước — chỉ 1 ô được chọn
  const bm=G.ui.modal==='bag',ps=G.ui.sel;
  const th=G.ui.hotbar.map((id,i)=>{
@@ -1358,6 +1516,10 @@ document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)r
 G.refreshUI=()=>{ui();G.save()};
 cv.addEventListener('click',e=>{if(G.ui.modal||G.P.st==='work')return;const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width,sy=(e.clientY-r.top)*H/r.height;
  const x=sx+G.cam.x,y=sy+G.cam.y; // convert to world coords
+ const zf=G.zones[G.ui.zone];
+ if(zf&&zf.fp){ // màn góc nhìn thứ nhất: chạm là làm ngay, không đi bộ
+  for(let i=G.hot.length-1;i>=0;i--){const h=G.hot[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h){G.fxTap(x,y);h.fn&&h.fn();G.refreshUI&&G.refreshUI();return}}
+  return}
  for(let i=G.hot.length-1;i>=0;i--){const h=G.hot[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h){G.fxTap(h.sx,h.sy);G.P.act(h);return}}
  G.fxTap(x,y);G.P.go(x,y)});
 let last=performance.now(),acc=0;
@@ -1643,7 +1805,7 @@ addEventListener('pointerdown',e=>{
   const t=e.target;if(!t||!t.closest)return;
   if(t.id==='cv'){if(!G.ui.modal&&G.P.st!=='work')SND.tap();return}
   const b=t.closest('button');if(!b||b.id==='sndbtn')return;
-  const d=b.dataset;if(d.modal!==undefined||['buy','sell','sellall','animal','go','add','rows','kit','harvestall','again'].includes(d.act))return;
+  const d=b.dataset;if(d.modal!==undefined||['buy','sell','sellall','animal','go','add','rows','kit','harvestall','again','shopopen','shopclose'].includes(d.act))return;
   SND.tick(d.act==='slot'?1.15:1)},true);
 ['pointerup','touchend','click','keydown'].forEach(ev=>addEventListener(ev,unlock,true));
 document.addEventListener('visibilitychange',()=>{if(!ac)return;if(document.hidden)ac.suspend();else if(on)ac.resume()});
