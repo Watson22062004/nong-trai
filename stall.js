@@ -126,9 +126,12 @@ G.closeStall=()=>{const s=st();if(!s.open)return;s.open=false;s.q=0;
 
 // ===== Vẽ =====
 const bg=mkBg(b=>{
-  rr(b,0,0,384,98,'#a8dcf2');rr(b,0,0,384,24,'#8ed0ee');
-  [[-4,36,72,'#e8c888'],[64,46,58,'#d8a878'],[118,32,78,'#f0d8a0'],[192,44,62,'#c8d8a0'],[250,38,74,'#e8b8a0'],[320,48,70,'#d8c090']].forEach(([x,y,w,c])=>{
-    blk(b,x,y,w,82-y,c);for(let wx=x+9;wx<x+w-14;wx+=19)for(let wy=y+9;wy<68;wy+=21)blk(b,wx,wy,10,12,'#8ec8e0')});
+  A.sky(b,384,82);A.sun(b,334,38,8);A.cloud(b,26,30,.8);A.cloud(b,176,42,.7);A.cloud(b,262,28,.6);
+  A.hills(b,0,52,384,30,'#9bbfd2',3);
+  // dãy nhà phố phía sau: mỗi nhà một màu tường, màu mái, kiểu cửa (không tương tác)
+  [[-4,34,66,'#e8c888','#c0402a',{chim:1,sign:'#3b8a8a'}],[65,40,54,'#d8a878','#4a6a8a',{left:1,sh:'#c8462e',cur:'#f6b0c0'}],[121,30,70,'#f0d8a0','#a8573a',{sign:'#c8462e',sh:'#3b8a8a'}],
+   [194,38,56,'#c8d8a0','#6a4a6a',{chim:1,left:1}],[253,32,66,'#e8b8a0','#3f7a6a',{sign:'#f2a82a',cur:'#fff'}],[322,36,66,'#d8c090','#8a5a40',{chim:1,sh:'#4a7ab0'}]
+  ].forEach(([x,y,w,c,r,o])=>A.town(b,x,y,w,82,c,r,o));
   rr(b,0,82,384,16,'#cdb27c');for(let y=84;y<98;y+=6)for(let x=(y/6%2)*7;x<384;x+=14)rr(b,x,y,13,5,['#d8c090','#c4a870','#dcc898'][(x+y)%3]);
   // mái hiên
   for(let i=0;i<24;i++){const c=i%2?'#fffaf0':'#c8462e';rr(b,i*16,0,16,16,c);rr(b,i*16+2,16,12,4,c);rr(b,i*16+4,20,8,2,c)}

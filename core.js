@@ -160,8 +160,9 @@ G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 if(!Array.isArray(G.S.hotbar))G.S.hotbar=Array(8).fill(null);
 G.S.hotbar=G.S.hotbar.map(id=>id&&G.S.inv[id]?id:null); // dọn ô nhanh còn giữ vật phẩm đã hết (save cũ)
-// Save cũ chưa có nâng cấp: mở sẵn đủ 6 hàng ruộng để không mất gì
-if(G.S.plotsOpen==null){G.S.plotsOpen=(G.S.rows==null?6:G.S.rows)*10;delete G.S.rows} // save cũ mở theo hàng → quy ra số ô (save không có rows = mở hết)
+// Số ô đất đã mở: save cũ mở theo hàng (rows) thì quy ra số ô; save thiếu hoặc hỏng thì về 10 ô đầu (trước đây bị coi là "mở hết 60 ô")
+if(!Number.isInteger(G.S.plotsOpen))G.S.plotsOpen=Number.isInteger(G.S.rows)?G.S.rows*10:10;
+delete G.S.rows;G.S.plotsOpen=Math.max(10,Math.min(G.CFG.plots,G.S.plotsOpen));
 if(G.S.rep==null)G.S.rep=20;if(G.S.kit==null)G.S.kit=0;
 // Save trước hệ thống cấp quán: đã từng phục vụ khách thì coi như đã có xe đẩy (không bị khoá lại)
 if(G.S.tier==null)G.S.tier=G.S.served>0?1:0;if(G.S.quest==null)G.S.quest=0;if(G.S.story==null)G.S.story=0;
@@ -466,14 +467,24 @@ G.fxDraw=t=>{const dt=Math.min((t-(G._ft||t))/1000,.1);G._ft=t;
 // 4 KHU: Nông trại · Chợ · Bếp · Quán. Mỗi khu = {bg: nền vẽ 1 lần, draw: phần động + vùng chạm}
 const rr=(b,x,y,w,h,c)=>{b.fillStyle=c;b.fillRect(x,y,w,h)};
 const mkBg=(fn,ww=W,hh=H)=>{const c=document.createElement('canvas');c.width=ww;c.height=hh;fn(c.getContext('2d'));return c};
-const grass=b=>{const g=['#7ec85e','#72bc52','#68b048','#7ac45a'],cw=b.canvas.width,ch=b.canvas.height;
- // Cỏ nền mềm (kiểu Tiny Farm)
- for(let y=0;y<ch;y+=3)for(let x=0;x<cw;x+=3)rr(b,x,y,3,3,g[hs(x,y)%4]);
- // Cỏ nhọn nhỏ
- for(let i=0;i<200;i++){const x=hs(i,1)%cw,y=hs(i,2)%ch;rr(b,x,y,1,2,'#4a9a3c');if(i%3===0)rr(b,x+1,y+1,1,2,'#5aab4c')}
- // Đốm trắng + hoa nhỏ rải (như ảnh reference)
- for(let i=0;i<80;i++){const x=hs(i,3)%cw,y=hs(i,4)%ch;rr(b,x,y,1,1,'#e8f5d0')}
- for(let i=0;i<35;i++){const x=hs(i,5)%cw,y=hs(i,6)%ch;rr(b,x,y,2,2,['#fff','#f2d04a','#f1a0b0','#c8e090'][i%4]);rr(b,x,y+2,1,1,'#4a9a3c')}};
+const grass=(b,y0=0)=>{const cw=b.canvas.width,ch=b.canvas.height,N_=['#7ec85e','#72bc52','#7ac45a','#76c056'],D_=['#6cb04c','#62a644','#68ac48','#5f9f42'],L_=['#8ed06a','#86cc64','#92d46e','#8acf68'];
+ // nền: 4 tông theo khối 3px; rồi phủ các vạt cỏ sáng / tối hình elip (bán kính 10–30px) cho đỡ phẳng
+ for(let y=y0;y<ch;y+=3)for(let x=0;x<cw;x+=3)rr(b,x,y,3,3,N_[hs(x,y)%4]);
+ const area=cw*(ch-y0);
+ for(let i=0;i<area/3400;i++){const bx=hs(i,51)%cw,by=y0+hs(i,52)%(ch-y0),rx=12+hs(i,53)%20,ry=7+hs(i,54)%12,P=i%3===0?D_:L_;
+  for(let y=Math.max(y0,by-ry);y<Math.min(ch,by+ry);y+=3)for(let x=Math.max(0,bx-rx);x<Math.min(cw,bx+rx);x+=3){const dx=(x-bx)/rx,dy=(y-by)/ry;if(dx*dx+dy*dy<=1)rr(b,x,y,3,3,P[hs(x,y)%4])}}
+ // vạt đất trống + sỏi
+ for(let i=0;i<area/9000;i++){const x=hs(i,11)%cw,y=y0+hs(i,12)%(ch-y0),w=8+hs(i,13)%8;rr(b,x,y,w,3,'#a8b46a');rr(b,x+1,y-1,w-2,1,'#a8b46a');rr(b,x+2,y+3,w-4,1,'#98a45a')}
+ for(let i=0;i<area/2600;i++){const x=hs(i,14)%cw,y=y0+hs(i,15)%(ch-y0);rr(b,x,y+1,3,1,'#5a8a42');rr(b,x,y,2,1,'#b4b8ac');rr(b,x,y,1,1,'#d4d8cc')}
+ // cụm cỏ nhọn 3 lá + điểm sáng
+ for(let i=0;i<area/180;i++){const x=hs(i,1)%cw,y=y0+hs(i,2)%(ch-y0);rr(b,x,y,1,3,'#4a9a3c');rr(b,x-1,y+1,1,2,'#5aab4c');rr(b,x+1,y+1,1,2,'#5aab4c');rr(b,x,y-1,1,1,'#a8e080')}
+ // cỏ ba lá sáng
+ for(let i=0;i<area/1400;i++){const x=hs(i,7)%cw,y=y0+hs(i,8)%(ch-y0);rr(b,x,y,2,1,'#9ad870');rr(b,x+1,y-1,1,1,'#9ad870');rr(b,x-1,y+1,1,1,'#9ad870')}
+ // đốm sáng nhỏ
+ for(let i=0;i<area/450;i++){const x=hs(i,3)%cw,y=y0+hs(i,4)%(ch-y0);rr(b,x,y,1,1,'#e8f5d0')}
+ // cụm hoa dại (3–5 bông, cánh + nhuỵ + cuống)
+ for(let i=0;i<area/3200;i++){const cx0=hs(i,5)%cw,cy0=y0+4+hs(i,6)%(ch-y0-4),col=['#fff','#f2d04a','#f1a0b0','#c8b0f0'][i%4];
+  for(let k=0;k<3+i%3;k++){const x=cx0+(hs(i,20+k)%11)-5,y=cy0+(hs(i,30+k)%7)-3;rr(b,x,y+2,1,2,'#4a9a3c');rr(b,x-1,y,3,1,col);rr(b,x,y-1,1,3,col);rr(b,x,y,1,1,k%2?'#f2a82a':'#fff2a8')}}};
 const river=(b,y)=>{const cw=b.canvas.width,ch=b.canvas.height;rr(b,0,y,cw,ch-y,'#2a1a10');rr(b,0,y+2,cw,ch-y-2,'#3f8fc4');rr(b,0,y+2,cw,3,'#6cb6dd')};
 const awn=(b,x,y,w,c1,c2)=>{for(let i=0;i*14<w;i++){const c=i%2?c2:c1;rr(b,x+i*14,y,14,14,c);rr(b,x+i*14+2,y+14,10,3,c)}rr(b,x,y-2,w,2,'#2a1a10')};
 const planks=(b,x,y,w,h,c,l)=>{rr(b,x,y,w,h,'#2a1a10');rr(b,x+2,y+2,w-4,h-4,c);for(let i=x+8;i<x+w-2;i+=8)rr(b,i,y+2,1,h-4,l)};

@@ -143,7 +143,7 @@ cv.addEventListener('click',e=>{if(G.ui.modal||G.P.st==='work')return;const r=cv
  for(let i=G.hot.length-1;i>=0;i--){const h=G.hot[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h){G.fxTap(h.sx,h.sy);G.P.act(h);return}}
  G.fxTap(x,y);G.P.go(x,y)});
 let last=performance.now(),acc=0;
-(function loop(now){const dt=Math.min((now-last)/1000,1);last=now;
+(function loop(now){const dt=G.paused?0:Math.min((now-last)/1000,1);last=now;
  G.updateFarm(dt);G.updateKitchen(dt);G.draw(now);
  acc+=dt;if(acc>.5){acc=0;ui();G.save()}
  requestAnimationFrame(loop)})(last);

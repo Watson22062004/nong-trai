@@ -11,6 +11,8 @@ js/
   ui.js             # Giao diện túi đồ, thanh ô nhanh, vòng lặp
   art.js            # Bộ vẽ chibi pixel dùng chung (khối, cây, nhà, sprite lớn của cây/vật nuôi)
   plants.js         # Hình cây trên ruộng: mỗi loại 5 giai đoạn (hạt · mầm · nhỏ · lớn · chín)
+  music.js          # Nhạc nền lofi chill tạo bằng Web Audio
+  menu.js           # Màn hình mở game (Chơi tiếp / Chơi lại / Cài đặt) + nút và bảng cài đặt
   icons.js          # Icon vật phẩm / nguyên liệu / hạt / món ăn / vật nuôi / xu, vẽ bằng code 16×16
   audio.js          # Âm thanh (Web Audio tự tổng hợp, chỉ quan sát trạng thái game, nút bật/tắt góc phải)
   zones/
@@ -101,6 +103,21 @@ Các zone ghi vào `G.zones` / `Z` và dùng chung `G.travelTo`, `G.drawPOI`.
 - Dùng cho: `A.hut` (3 nhà sàn trong làng + nhà đối diện), cổng vào khu ở `core.js` (`poiFarm`, `poiMarket`, `poiPets`, `poiShop`) và chuồng vật nuôi ở nền `zones/farm.js`. Vị trí, kích thước và vùng bấm của các công trình giữ nguyên như cũ.
 - Các hàm `poi*` nhận thêm tham số cuối `b` (mặc định là canvas game) để vẽ thử ra canvas riêng khi cần xem hình.
 - Chưa đổi: xe đẩy (`poiCovered`, `poiCart`), cổng `poiGate`, nội thất bếp và cửa hàng.
+
+## Cảnh quan (trời, mây, đồi, cỏ, nhà phố nền)
+
+- `A.sky(b,w,h)` bầu trời 6 dải xanh đậm → nhạt, chuyển dải bằng rây điểm ảnh · `A.sun(b,x,y,r)` mặt trời có quầng và tia · `A.cloud(b,x,y,s)` mây xốp nhiều khối, đáy phẳng, bóng xanh nhạt phía dưới (`s` = tỉ lệ) · `A.hills(b,x,y,w,h,c,seed)` dãy đồi/núi xa có sống đồi sáng và cây nhỏ trên sườn. Tất cả ở `js/art.js`.
+- `A.town(b,x,y,w,gy,tường,mái,{chim,sign,left,sh,cur,door})` nhà phố nền (không tương tác): vữa trát, đá góc, chân tường, gờ tầng, mái ngói + ống khói, cửa sổ chớp + hộp hoa, cửa chính, biển treo. Dùng cho dãy phố sau quầy ở `zones/stall.js`.
+- `grass(b,y0)` (core.js): cỏ 4 tông + vạt sáng/tối hình elip + vạt đất trống + sỏi + cụm cỏ 3 lá + cỏ ba lá + cụm hoa dại; `y0` là hàng bắt đầu phủ cỏ (làng dùng 56 để chừa chỗ cho trời và đồi).
+- Làng (`zones/hub.js`): trời, mặt trời, 5 đám mây, 3 lớp đồi rồi mới tới cỏ. Vì chợ và cửa hàng thú cưng nằm sát mép trên bản đồ nên phần trời chủ yếu lộ ở hai bên. Ruộng (`zones/farm.js`): thêm bìa cỏ bên trái có cây, bụi, đá, hoa.
+
+## Nhạc nền, cài đặt, màn hình mở game
+
+- **Nhạc lofi** (`js/music.js`): 72 BPM có swing; hợp âm 7/9 chơi bằng đàn Rhodes (tremolo, lọc mềm), bass trầm, nốt chuông thưa có vang và vọng, trống nhẹ, tiếng xào xạc đĩa than, bão hoà nhẹ kiểu băng từ. Chuỗi hợp âm (`PROG`) đổi ngẫu nhiên mỗi 4 ô nhịp; trống vào sau 2 ô nhịp đầu. Nhạc bắt đầu sau cử chỉ đầu tiên của người chơi (quy định của trình duyệt) và nhỏ dần vào trong 3.5 giây. Không dùng file âm thanh nào.
+- **Âm thanh** (`js/audio.js`): kênh hiệu ứng và kênh nhạc tách riêng, mỗi kênh có công tắc + âm lượng, lưu ở `localStorage` khoá `xoiBenDua_set` (`G.audio.cfg`: `mOn`, `mVol`, `sOn`, `sVol`). Nút loa ở góc vẫn là công tắc tắt/bật tất cả.
+- **Cài đặt** (`js/menu.js`): nút bánh răng dưới nút loa. Bảng có nhạc nền, hiệu ứng, Màn hình chính, Chơi lại (có hỏi xác nhận), Đóng.
+- **Màn hình mở game**: Chơi tiếp (khoá nếu chưa có ván, hiện "Ngày · xu" nếu có), Chơi lại (hỏi xác nhận nếu đang có ván), Cài đặt. Game tạm dừng (`G.paused`) khi màn này mở. **Chơi lại** xoá save rồi tải lại trang, nên mọi thứ bắt đầu sạch và bỏ qua màn mở game một lần.
+- **Sửa lỗi mở hết ô đất**: trước đây save thiếu hoặc hỏng trường `plotsOpen` bị coi là save cũ và mở hết 60 ô. Giờ save như vậy về 10 ô đầu; save kiểu cũ có `rows` vẫn quy đổi theo hàng. Số ô luôn được kẹp trong 10…60.
 
 ## Ghi chú kỹ thuật
 

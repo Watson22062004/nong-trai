@@ -1,11 +1,11 @@
 // Làng (tên hiển thị lấy từ G.VILLAGE): nhà lá, kênh sen, đường lát đá, vườn rau, cổng chibi dẫn vào từng khu.
 Z.hub={bg:mkBg(b=>{
   const Wd=640;
-  [['#7fc0ea',0,30],['#9ccfee',30,24],['#bfe2f4',54,16],['#dff2f8',70,10]].forEach(([c,y,h])=>rr(b,0,y,Wd,h,c));
-  disc(b,560,30,13,'#fff2a8');disc(b,560,30,10,'#ffe27a');
-  A.cloud(b,60,14);A.cloud(b,290,8);A.cloud(b,450,24);
-  [[60,86,48,'#8fb4cc'],[170,88,40,'#9cbfd4'],[330,86,52,'#8fb4cc'],[470,88,44,'#9cbfd4'],[590,86,46,'#8fb4cc']].forEach(([x,y,r,c])=>disc(b,x,y,r,c));
-  grass(b);
+  // trời + mặt trời + mây, núi xa, đồi gần; cỏ bắt đầu từ đường chân trời (y=56)
+  A.sky(b,Wd,60);A.sun(b,560,24,11);
+  A.cloud(b,40,8,1);A.cloud(b,170,22,.7);A.cloud(b,300,4,1.2);A.cloud(b,440,18,.9);A.cloud(b,600,34,.6);
+  A.hills(b,0,30,Wd,34,'#a6c4d8',1);A.hills(b,0,40,Wd,26,'#86b4a2',2);A.hills(b,0,49,Wd,16,'#6aa86a',3);
+  grass(b,56);
   rr(b,0,70,Wd,16,'#7ec85e');
   [[0,92,60],[150,96,54],[300,94,62],[470,96,56],[620,92,50]].forEach(([x,y,r])=>disc(b,x,y,r,'#68b048'));
   rr(b,0,86,Wd,12,'#72bc52');

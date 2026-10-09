@@ -6,7 +6,39 @@ const orb=(b,x,y,r,c)=>{for(let k=0;k<2;k++){const q=k?r:r+1;for(let j=-q;j<=q;j
 const disc=(b,x,y,r,c)=>{for(let j=-r;j<=r;j++){const w=Math.sqrt(r*r-j*j)|0;rr(b,x-w,y+j,w*2+1,1,c)}};
 const ell=(b,x,y,rx,ry,c)=>{for(let j=-ry;j<=ry;j++){const w=Math.sqrt(1-j*j/(ry*ry))*rx|0;rr(b,x-w,y+j,w*2+1,1,c)}};
 const A={
- cloud:(b,x,y)=>{disc(b,x+10,y+8,8,'#fff');disc(b,x+22,y+5,10,'#fff');disc(b,x+34,y+9,7,'#fff');rr(b,x+4,y+12,36,4,'#fff');rr(b,x+4,y+15,36,2,'#d8e8f2')},
+ // mây xốp nhiều khối: lớp bóng xanh nhạt phía dưới, khối trắng phía trên, đáy phẳng. s = tỉ lệ
+ cloud:(b,x,y,s=1)=>{const P=[[9,10,7],[19,6,9],[31,8,8],[40,11,6],[22,12,8]],f=v=>Math.round(v*s);
+  P.forEach(([cx_,cy,r])=>disc(b,x+f(cx_),y+f(cy)+2,f(r),'#cfe3f0'));
+  P.forEach(([cx_,cy,r])=>disc(b,x+f(cx_),y+f(cy),f(r),'#fdfeff'));
+  rr(b,x+f(4),y+f(15),f(42),f(3),'#cfe3f0');rr(b,x+f(6),y+f(14),f(38),f(2),'#fdfeff');
+  P.forEach(([cx_,cy,r],i)=>{if(i<4)rr(b,x+f(cx_)-f(r*.4),y+f(cy)-f(r*.62),Math.max(2,f(r*.5)),1,'#ffffff')});
+  rr(b,x+f(8),y+f(17),f(34),1,'#bcd6e6')},
+ // bầu trời: 6 dải xanh đậm→nhạt, chuyển dải bằng 3 hàng rây điểm ảnh
+ sky:(b,w,h)=>{const C=['#5aaee4','#74bfee','#8fcdf2','#aadcf6','#c3e6f9','#dbf1fa'],n=C.length,bh=h/n;
+  for(let k=0;k<n;k++){const y0=Math.round(k*bh),y1=Math.round((k+1)*bh);rr(b,0,y0,w,y1-y0,C[k]);
+   if(k<n-1)for(let j=0;j<3;j++)for(let q=0;q<w;q+=2)if(((q>>1)+j)%2===0)rr(b,q,y1-1-j,2,1,C[k+1])}},
+ // mặt trời: quầng 2 lớp, lõi 3 tông, tia ngắn
+ sun:(b,x,y,r)=>{disc(b,x,y,r+9,'#d4eefa');disc(b,x,y,r+5,'#e8f7fc');
+  for(let a=0;a<8;a++){const t=a*Math.PI/4;for(let d=r+3;d<r+8;d++)rr(b,Math.round(x+Math.cos(t)*d),Math.round(y+Math.sin(t)*d),1,1,'#fff6c0')}
+  disc(b,x,y,r,'#ffd95a');disc(b,x,y,r-1,'#ffe27a');disc(b,x-1,y-1,Math.max(2,r-4),'#fff2a8');rr(b,x-3,y-4,2,1,'#fffbe0')},
+ // dãy đồi / núi xa: sườn lượn theo sin + nhiễu, vạch sáng ở sống đồi, vài cây nhỏ trên sườn
+ hills:(b,x,y,w,h,c,seed=1)=>{for(let i=0;i<w;i++){const t=i+x,top=y+Math.round(Math.sin(t*.031+seed)*5+Math.sin(t*.07+seed*2)*2.5+((hs(t>>2,seed)%3)-1)*.8);
+   rr(b,t,top,1,h,c);rr(b,t,top,1,1,tn(c,.3));rr(b,t,top+1,1,1,tn(c,.14));
+   if(hs(t,seed+9)%37===0){const tc=tn(c,-.32);rr(b,t,top-3,3,3,tc);rr(b,t+1,top-4,1,1,tc)}}
+  for(let i=0;i<w*h/80;i++){const t=x+hs(i,seed+3)%w,j=y+9+hs(i,seed+4)%Math.max(1,h-9);rr(b,t,j,2,1,tn(c,-.12))}},
+ // nhà phố nền (không tương tác): vữa trát, đá góc, chân tường, gờ tầng, mái ngói + ống khói, cửa sổ chớp + hộp hoa, cửa chính + cửa kính, biển treo
+ town:(b,x,y,w,gy,wall,roof,o={})=>{const h=gy-y,fl=y+Math.round(h*.46);
+  blk(b,x,y,w,h,wall);for(let i=0;i<w*h/20;i++)rr(b,x+2+hs(i,1)%(w-4),y+2+hs(i,2)%(h-4),1,1,tn(wall,i%2?-.09:.12));
+  rr(b,x+1,y+1,w-2,1,tn(wall,.28));rr(b,x+w-3,y+2,2,h-2,tn(wall,-.14));
+  [x+1,x+w-3].forEach(q=>{for(let j=y+4;j<gy-8;j+=6)rr(b,q,j,2,3,tn(wall,-.22))});
+  rr(b,x,gy-5,w,5,'#a39c90');for(let q=x;q<x+w;q+=6)rr(b,q,gy-5,5,2,'#b8b2a6');rr(b,x,gy-5,w,1,'#d0cabc');
+  rr(b,x,fl,w,2,tn(wall,-.26));rr(b,x,fl,w,1,tn(wall,.3));
+  A.tiles(b,x-2,y-11,w+4,11,roof);if(o.chim){blk(b,x+w-14,y-20,6,10,'#a8573a');rr(b,x+w-15,y-21,8,2,'#6b3a24');rr(b,x+w-13,y-19,2,5,'#c07a5a')}
+  const n=Math.max(1,Math.floor((w-8)/20)),gap=(w-8)/n,wh=Math.max(7,Math.min(11,fl-y-9));
+  for(let i=0;i<n;i++)A.win(b,Math.round(x+4+gap*i+gap/2-5),y+5,10,wh,{sh:o.sh||'#5f9a4a',box:i%2===0,cur:o.cur});
+  const dh=Math.min(15,gy-fl-8);A.door(b,Math.round(x+w/2-(o.left?-6:5)),gy-5-dh,10,dh,o.door||'#6b4423');
+  A.win(b,o.left?x+4:x+w-17,fl+5,13,Math.max(6,gy-fl-15),{sh:o.sh||'#5f9a4a'});
+  if(o.sign){rr(b,x+w-4,fl-5,8,1,'#4a2e18');blk(b,x+w-2,fl-4,8,7,o.sign);rr(b,x+w,fl-2,4,1,'#fff')}},
  lantern:(b,x,y,c='#d8402e')=>{rr(b,x+3,y-8,1,8,OL);blk(b,x,y,8,10,c);rr(b,x+2,y+3,4,3,'#ffd86a');rr(b,x+2,y,4,1,'#f2d04a');rr(b,x+3,y+10,2,4,'#f2d04a')},
  jar:(b,x,y,c)=>{blk(b,x+1,y,6,3,'#c4a06a');blk(b,x,y+2,8,9,c);rr(b,x+2,y+5,2,3,tn(c,.5))},
  crate:(b,x,y,w=16,h=12,c='#b07a40')=>{blk(b,x,y,w,h,c);rr(b,x+2,(y+h/2)|0,w-4,1,tn(c,-.3));rr(b,x+(w>>1),y+2,1,h-4,tn(c,-.3))},

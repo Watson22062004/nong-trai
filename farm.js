@@ -1,5 +1,10 @@
 Z.farm={bg:mkBg(b=>{
   grass(b);
+  // Bìa cỏ bên trái ruộng: cây, bụi, đá, hoa (chỉ để trang trí)
+  A.tree(b,26,64,'#4a9a3c');A.tree(b,92,40,'#5fb04a');A.tree(b,18,138,'#5fb04a');A.tree(b,112,118,'#4a9a3c');
+  [[60,92],[44,30],[120,70],[70,160],[8,100],[132,150]].forEach(([x,y],i)=>A.bush(b,x,y,i%2?'#5fb04a':'#4a9a3c'));
+  [[50,120],[100,16],[10,60]].forEach(([x,y])=>A.stone(b,x,y,8));
+  for(let i=0;i<14;i++)A.flower(b,8+hs(i,41)%130,10+hs(i,42)%170,['#f2d04a','#f6b0c0','#fff','#b8a0e8'][i%4]);
   // Chuồng mái lá bên phải: nền rơm, vách ván phía sau, mái rơm, 2 cột lớn, máng nước
   rr(b,396,34,110,118,'#d4b27a');
   for(let i=0;i<46;i++){const x=398+hs(i,3)%104,y=38+hs(i,4)%110;rr(b,x,y,5+hs(i,5)%4,1,i%3?'#e8cd6e':'#b88a4a')}

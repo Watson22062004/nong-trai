@@ -5,7 +5,11 @@
 const KEY='xoiBenDua_snd';
 let on=true;try{on=localStorage[KEY]!=='0'}catch(e){}
 const VOL=1.8; // âm lượng tổng (trước là 0.8 → hơi nhỏ, nhất là trên điện thoại). Chỉnh số này để to/nhỏ.
-let ac=null,sfx,ambBus,master,noise,crack,amb=null,busy=0;
+let ac=null,sfx,ambBus,sg,mg,master,noise,crack,amb=null,busy=0;
+// Cài đặt âm thanh (lưu riêng): nhạc nền và hiệu ứng, mỗi bên có công tắc + âm lượng 0..1. Nút loa ở góc vẫn là công tắc tắt/bật tất cả.
+const SK='xoiBenDua_set',cfg={mOn:true,mVol:.6,sOn:true,sVol:1};try{Object.assign(cfg,JSON.parse(localStorage[SK]))}catch(e){}
+const apply=()=>{if(!ac)return;const t=ac.currentTime;sg.gain.setTargetAtTime(cfg.sOn?cfg.sVol:0,t,.05);mg.gain.setTargetAtTime(cfg.mOn?cfg.mVol*.7:0,t,.08)};
+G.audio={cfg,apply,save(){try{localStorage[SK]=JSON.stringify(cfg)}catch(e){}},ctx:()=>ac,out:()=>mg,ready:[],ensure(){unlock()}};
 const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.random()*a.length|0];
 const live=()=>!!(ac&&on&&ac.state==='running'&&!document.hidden);
 const gt={};const gate=(k,ms)=>{const n=performance.now();if(n-(gt[k]||0)<ms)return false;gt[k]=n;return true};
@@ -18,14 +22,14 @@ function init(){
   const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=9000;
   const comp=ac.createDynamicsCompressor();comp.threshold.value=-20;comp.knee.value=18;comp.ratio.value=6;comp.attack.value=.004;comp.release.value=.2;
   master=ac.createGain();master.gain.value=on?VOL:0;
-  sfx=ac.createGain();ambBus=ac.createGain();
-  sfx.connect(lp);ambBus.connect(lp);lp.connect(comp);comp.connect(master);master.connect(ac.destination);
+  sfx=ac.createGain();ambBus=ac.createGain();sg=ac.createGain();mg=ac.createGain();
+  sfx.connect(sg);ambBus.connect(sg);sg.connect(lp);mg.connect(lp);lp.connect(comp);comp.connect(master);master.connect(ac.destination);
   const sr=ac.sampleRate;
   noise=ac.createBuffer(1,sr*2,sr);{const d=noise.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
   crack=ac.createBuffer(1,sr*3,sr);{const d=crack.getChannelData(0);let k=0,a=0;
     for(let i=0;i<d.length;i++){d[i]=(Math.random()*2-1)*.04;if(Math.random()<.00035){k=i;a=rnd(.5,1)}
       const j=i-k;if(j>=0&&j<28)d[i]+=(Math.random()*2-1)*a*(1-j/28)}}
-  startAmbient();
+  startAmbient();apply();G.audio.ready.forEach(f=>{try{f()}catch(e){}});
 }
 // Trình duyệt chỉ mở khoá âm thanh khi có "cử chỉ" thật: trên cảm ứng đó là pointerup/touchend/click (KHÔNG phải pointerdown/touchstart),
 // nên unlock() được gọi ở tất cả các sự kiện đó. iOS còn cần đặt audioSession='playback' để không bị công tắc im lặng chặn.
