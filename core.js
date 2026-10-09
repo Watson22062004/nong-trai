@@ -1,20 +1,20 @@
 
 // DỮ LIỆU GAME: muốn thêm cây / con vật / món ăn → sửa file này
 const G = window.G = {};
-G.CROPS = { // seed: giá hạt, time: giây lớn, sell: giá bán, color: màu vẽ
-  nep:{n:'Nếp',seed:5,time:15,sell:12,color:'#e8d27a'},
-  dau_xanh:{n:'Đậu xanh',seed:8,time:20,sell:18,color:'#6fae4e'},
-  hanh:{n:'Hành lá',seed:4,time:12,sell:9,color:'#3f9a4a'},
-  dua:{n:'Dừa',seed:15,time:35,sell:40,color:'#8b5a2b'},
-  gao:{n:'Gạo',seed:6,time:18,sell:14,color:'#efe6c4'},
-  ca_chua:{n:'Cà chua',seed:6,time:14,sell:12,color:'#e2492f'},
-  rau_muong:{n:'Rau muống',seed:4,time:10,sell:8,color:'#3f8a3a'},
-  ot:{n:'Ớt',seed:5,time:16,sell:11,color:'#d8301f'},
-  ca_rot:{n:'Cà rốt',seed:5,time:16,sell:12,color:'#ee8a2a'},
-  rau_thom:{n:'Rau thơm',seed:4,time:12,sell:9,color:'#5fb04a'},
-  chuoi:{n:'Chuối',seed:12,time:30,sell:32,color:'#f2d04a'},
-  dau_phong:{n:'Đậu phộng',seed:7,time:20,sell:18,color:'#c49050'},
-  chanh:{n:'Chanh',seed:5,time:18,sell:10,color:'#b8d84a'} // nguyên liệu trà chanh: phải tự trồng (không còn bán ở chợ)
+G.CROPS = { // seed: giá hạt, time: giây lớn (rau 36–45s, củ/hạt 60–130s, cây thân gỗ chuối 270s · dừa 360s), sell: giá bán, color: màu vẽ
+  nep:{n:'Nếp',seed:5,time:85,sell:12,color:'#e8d27a'},
+  dau_xanh:{n:'Đậu xanh',seed:8,time:120,sell:18,color:'#6fae4e'},
+  hanh:{n:'Hành lá',seed:4,time:45,sell:9,color:'#3f9a4a'},
+  dua:{n:'Dừa',seed:15,time:360,sell:40,color:'#8b5a2b'},
+  gao:{n:'Gạo',seed:6,time:100,sell:14,color:'#efe6c4'},
+  ca_chua:{n:'Cà chua',seed:6,time:80,sell:12,color:'#e2492f'},
+  rau_muong:{n:'Rau muống',seed:4,time:36,sell:8,color:'#3f8a3a'},
+  ot:{n:'Ớt',seed:5,time:70,sell:11,color:'#d8301f'},
+  ca_rot:{n:'Cà rốt',seed:5,time:90,sell:12,color:'#ee8a2a'},
+  rau_thom:{n:'Rau thơm',seed:4,time:45,sell:9,color:'#5fb04a'},
+  chuoi:{n:'Chuối',seed:12,time:270,sell:32,color:'#f2d04a'},
+  dau_phong:{n:'Đậu phộng',seed:7,time:130,sell:18,color:'#c49050'},
+  chanh:{n:'Chanh',seed:5,time:60,sell:10,color:'#b8d84a'} // nguyên liệu trà chanh: phải tự trồng (không còn bán ở chợ)
 };
 G.ANIMALS = { // cost: giá mua, make: sản phẩm, time: giây ra sản phẩm sau khi cho ăn
   ga:{n:'Gà',cost:50,make:'trung',time:18,color:'#fff'},
@@ -93,32 +93,18 @@ G.loadImg=src=>{if(G._imgCache[src])return G._imgCache[src];const i=new Image();
 
 
 
-// ICON PIXEL ART 8x8 tự vẽ bằng chuỗi ký tự. Mỗi ký tự = 1 màu trong bảng P. Tự thêm viền tối.
+// ICON PIXEL ART 8x8 tự vẽ bằng chuỗi ký tự (chỉ còn icon giao diện: balo, sách, nhiệm vụ, sao, mặt; vật phẩm/món ăn vẽ ở js/icons.js). Mỗi ký tự = 1 màu trong bảng P. Tự thêm viền tối.
 (()=>{
 const P={k:'#2a1a10',w:'#fff3d6',y:'#f2b632',g:'#6fb04e',G:'#3f8a3a',b:'#8b5a2b',B:'#5a3a20',r:'#c8462e',p:'#f1c9a0',c:'#e8d27a',e:'#fffaf0',o:'#e8892a',d:'#d9a066',s:'#8fc8e0',n:'#6b4a30'};
 const S={
- nep:['......cc','.....ccc','....ccc.','...ccc..','..cc.G..','....G...','....G...','....G...'],
- dau_xanh:['......GG','.....GgG','....GggG','...GggG.','..GggG..','.GggG...','GggG....','.GG.....'],
- hanh:['..g...g.','..g...g.','.gg..gg.','.gGg.gG.','..GgGg..','...GG...','...ee...','...ee...'],
- dua:['..bbbb..','.bbbbbb.','bbwbbbbb','bwbbbbBb','bbbbbbbb','bbBbbbbb','.bbbbbb.','..bbbb..'],
- trung:['...ee...','..eeee..','.eeeeee.','.eeeeee.','.eeeeee.','.eeepee.','..eppe..','...ee...'],
- sua:['..nnnn..','...ww...','..wwww..','..wwww..','..ssss..','..wwww..','..wwww..','..wwww..'],
- cam:['..yyyy..','.yyyyyy.','..bbbb..','.bbbbbb.','bbybybbb','bbbbbbbb','bybbybyb','.bbbbbb.'],
- duong:['........','..wwww..','.wwwwws.','wwwwwwss','wwwwwsss','wwwwsss.','.ssss...','........'],
- muoi:['..bbbb..','..bwbw..','..wwww..','.wwwwww.','.wsswww.','.wwwwww.','.wwwwww.','..wwww..'],
- seed:['........','...yy...','..yyyy..','.yyoyy..','.yyyyy..','..yyy...','...y....','........'],
- bowl:['........','.aaaaaa.','eeeeeeee','rrrrrrrr','.rrrrrr.','.rrrrrr.','..rrrr..','........'],
- flan:['........','..bbbb..','.bbbbbb.','.yyyyyy.','.yyyyyy.','.yyyyyy.','wwwwwwww','........'],
- ga:['....r...','...eee..','..eeeeo.','.eeeee..','eeeeee..','eeeee...','..o.o...','........'],
- bo:['n......n','nddddddn','.dddddd.','dkddddkd','.dddddd.','..pppp..','..pkkp..','..pppp..'],
- coin:['..yyyy..','.yooooy.','yoyyyyoy','yoyooyoy','yoyooyoy','yoyyyyoy','.yooooy.','..yyyy..'],
  sun:['...y....','y..y..y.','.yyyyy..','.yyyyy.y','yyyyyyy.','.yyyyy..','y..y..y.','...y....'],
  face:['..BBBB..','.BBBBBB.','.pppppp.','.pkppkp.','.pppppp.','..prrp..','.rrrrrr.','.rrrrrr.'],
  // Balo to rõ hơn
  balo:['.BB..BB.','.BBBBBB.','BByyyyBB','ByeeeeBy','ByeyyeBy','ByeeeeBy','BByyyyBB','.BBBBBB.'],
+ book:['.BBBBBB.','BrrrrrrB','BreeeerB','BrekkerB','BreeeerB','BrekkerB','BrrrrrrB','.BBBBBB.'],
+ quest:['.nnnnnn.','neeeeeen','nekkkken','neeeeeen','nekkkeen','neeeeeen','nekkeeen','.nnnnnn.'],
  star:['...yy...','...yy...','yyyyyyyy','.yyyyyy.','..yyyy..','..yyyy..','.yy..yy.','yy....yy']
 };
-const tint={xoi_dau:'#9ac45a',xoi_man:'#d98a3a',xoi_dua:'#fff8e8'};
 const cache={};
 function make(rows,over={}){const c=document.createElement('canvas');c.width=c.height=10;const x=c.getContext('2d');
  const px=(i,j)=>rows[j]&&rows[j].padEnd(8,'.')[i];const f=(i,j)=>{const k=px(i,j);return k&&k!=='.'};
@@ -127,8 +113,7 @@ function make(rows,over={}){const c=document.createElement('canvas');c.width=c.h
   else if(f(i+1,j)||f(i-1,j)||f(i,j+1)||f(i,j-1)){x.fillStyle=P.k;x.fillRect(i+1,j+1,1,1)}}
  return c.toDataURL()}
 G.iconUrl=id=>cache[id]||(cache[id]=
- id.startsWith('hat_')?make(S.seed,{y:G.CROPS[id.slice(4)].color}):
- tint[id]?make(S.bowl,{a:tint[id]}):S[id]?make(S[id]):id==='flan'?make(S.flan):make(S.face));
+ S[id]?make(S[id]):make(S.face));
 G.ic=id=>`<img class="ic" alt="" src="${G.iconUrl(id)}">`;
 G.fillIcons=root=>root.querySelectorAll('[data-ic]').forEach(e=>e.innerHTML=G.ic(e.dataset.ic));
 })();
@@ -173,16 +158,19 @@ G.SP={
 })();
 
 // TRẠNG THÁI + LƯU GAME (localStorage)
-G.KEY='xoiBenDua';
+G.KEY='xoiBenDua'; // khoá lưu game: tên nội bộ, GIỮ NGUYÊN để không mất save cũ (người chơi không nhìn thấy)
+G.VILLAGE='Xóm Chanh'; // tên làng hiển thị trong game: đổi ở đây là đổi khắp game (riêng thẻ <title> ở index.html)
 G.fresh=()=>({money:G.CFG.startMoney,day:1,clock:0,inv:{hat_nep:5,hat_hanh:3,hat_dau_xanh:2,hat_chanh:4},
-  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,rows:2,rep:20,kit:0,open:false,
-  tier:0,quest:0,stat:{plant:0,h:{}}}); // tier: cấp quán (0 = xe đẩy còn phủ bạt, 1 = xe đẩy) · quest: nhiệm vụ hiện tại · stat: thống kê cho nhiệm vụ
+  hotbar:Array(8).fill(null),plots:Array(G.CFG.plots).fill(null),animals:[],cooking:[],customers:[],spawn:0,served:0,plotsOpen:10,rep:20,kit:0,open:false,
+  tier:0,quest:0,story:0,stat:{plant:0,h:{}}}); // tier: cấp quán (0 = xe đẩy còn phủ bạt, 1 = xe đẩy) · quest: bước hướng dẫn hiện tại · story: chương cốt truyện hiện tại · stat: thống kê cho nhiệm vụ
 G.S=(()=>{try{return JSON.parse(localStorage[G.KEY])}catch(e){return G.fresh()}})();
 if(!Array.isArray(G.S.hotbar))G.S.hotbar=Array(8).fill(null);
+G.S.hotbar=G.S.hotbar.map(id=>id&&G.S.inv[id]?id:null); // dọn ô nhanh còn giữ vật phẩm đã hết (save cũ)
 // Save cũ chưa có nâng cấp: mở sẵn đủ 6 hàng ruộng để không mất gì
-if(G.S.rows==null)G.S.rows=6;if(G.S.rep==null)G.S.rep=20;if(G.S.kit==null)G.S.kit=0;
+if(G.S.plotsOpen==null){G.S.plotsOpen=(G.S.rows==null?6:G.S.rows)*10;delete G.S.rows} // save cũ mở theo hàng → quy ra số ô (save không có rows = mở hết)
+if(G.S.rep==null)G.S.rep=20;if(G.S.kit==null)G.S.kit=0;
 // Save trước hệ thống cấp quán: đã từng phục vụ khách thì coi như đã có xe đẩy (không bị khoá lại)
-if(G.S.tier==null)G.S.tier=G.S.served>0?1:0;if(G.S.quest==null)G.S.quest=0;
+if(G.S.tier==null)G.S.tier=G.S.served>0?1:0;if(G.S.quest==null)G.S.quest=0;if(G.S.story==null)G.S.story=0;
 if(!G.S.stat)G.S.stat=G.S.served>0?{plant:1,h:{chanh:3,cu:10}}:{plant:0,h:{}}; // cu = đã thu hoạch ở bản chơi cũ
 if(!G.S.stat.h)G.S.stat.h={};
 while(G.S.plots.length<G.CFG.plots)G.S.plots.push(null);
@@ -217,17 +205,19 @@ G.fillHot=()=>{
 G.save=()=>{try{localStorage[G.KEY]=JSON.stringify(G.S)}catch(e){}};
 G.reset=()=>{G.S=G.fresh();G.ui.hotbar=G.S.hotbar;G.ui.held=null;G.ui.sel=null;G.save()};
 G.has=(id,n=1)=>(G.S.inv[id]||0)>=n;
-G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0)delete G.S.inv[id]};
+// Vật phẩm dùng hết thì biến mất khỏi túi, ô nhanh, tay cầm và ô đang chọn
+G.dropHot=id=>{const hb=G.ui.hotbar,i=hb.indexOf(id);if(i>=0)hb[i]=null;if(G.ui.held===id)G.ui.held=null;if(G.ui.sel===id)G.ui.sel=null};
+G.add=(id,n=1)=>{G.S.inv[id]=(G.S.inv[id]||0)+n;if(G.S.inv[id]<=0){delete G.S.inv[id];G.dropHot(id)}};
 
 // TRỒNG TRỌT + CHĂN NUÔI
-G.plotClick=i=>{if(Math.floor(i/10)>=G.S.rows)return;const p=G.S.plots[i],k=G.ui.seed;
+G.plotClick=i=>{if(!G.plotOpen(i))return;const p=G.S.plots[i],k=G.ui.seed;
   if(!p){ if(!G.has('hat_'+k))return G.msg('Hết hạt '+G.CROPS[k].n+' — ra Chợ đầu mối mua nhé');
     G.add('hat_'+k,-1);G.S.plots[i]={crop:k,t:0};G.S.stat.plant++;}
   else if(p.t>=G.CROPS[p.crop].time){const n=1+(Math.random()<.3?1:0);G.add(p.crop,n);G.S.stat.h[p.crop]=(G.S.stat.h[p.crop]||0)+n;G.S.plots[i]=null;}};
 G.buyAnimal=t=>{const a=G.ANIMALS[t];
   if(G.S.animals.length>=G.CFG.maxAnimals)return G.msg('Chuồng đã đầy');
   if(G.S.money<a.cost)return G.msg('Không đủ tiền');
-  G.S.money-=a.cost;G.S.animals.push({type:t,fed:false,t:0,ready:false});};
+  G.spend(a.cost,'animal');G.S.animals.push({type:t,fed:false,t:0,ready:false});};
 G.feed=i=>{const a=G.S.animals[i];if(a.fed||a.ready)return;
   if(!G.has('cam'))return G.msg('Hết cám — ra Chợ đầu mối mua nhé');G.add('cam',-1);a.fed=true;a.t=0;};
 G.collect=i=>{const a=G.S.animals[i];if(!a.ready)return;
@@ -237,20 +227,21 @@ G.harvestAll=()=>{let n=0;
   G.S.plots.forEach((p,i)=>{if(p&&p.t>=G.CROPS[p.crop].time){G.plotClick(i);n++}});
   G.S.animals.forEach((a,i)=>{if(a.ready){G.collect(i);n++}});
   G.msg(n?'Thu hoạch '+n+' mục':'Chưa có gì để thu hoạch');return n};
-// NÂNG CẤP: mở rộng ruộng theo hàng (10 ô/hàng) · bếp lửa mạnh nấu nhanh hơn
-G.ROW_COST=[0,0,200,400,700,1100];G.KIT_COST=[150,350,700];G.KIT_SPEED=[1,1.25,1.5,2];
-G.rowCost=()=>G.S.rows<6?G.ROW_COST[G.S.rows]:null;
+// NÂNG CẤP: mở ruộng từng ô một (ô mua đầu tiên 200 xu, mỗi ô sau ×1.35, tối đa 200000 xu/ô; 10 ô đầu miễn phí) · bếp lửa mạnh nấu nhanh hơn
+G.PLOT_FREE=10;G.PLOT_COST0=200;G.PLOT_COST_MUL=1.35;G.PLOT_COST_MAX=200000;G.KIT_COST=[150,350,700];G.KIT_SPEED=[1,1.25,1.5,2];
+G.plotCost=()=>G.S.plotsOpen<G.CFG.plots?Math.min(G.PLOT_COST_MAX,Math.round(G.PLOT_COST0*Math.pow(G.PLOT_COST_MUL,Math.max(0,G.S.plotsOpen-G.PLOT_FREE)))):null;
+G.shortNum=n=>n>=1000?(n>=10000?Math.round(n/1000):Math.round(n/100)/10)+'k':String(n); // số gọn để vừa ô đất (1500 → 1.5k, 200000 → 200k)
 G.kitCost=()=>G.S.kit<3?G.KIT_COST[G.S.kit]:null;
 G.kitSpeed=()=>G.KIT_SPEED[G.S.kit]||1;
-G.buyRow=()=>{const c=G.rowCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.S.money-=c;G.S.rows++;G.msg('Đã mở thêm 1 hàng ruộng!')};
-G.buyKit=()=>{const c=G.kitCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.S.money-=c;G.S.kit++;G.msg('Bếp lên cấp '+G.S.kit+' — nấu nhanh hơn!')};
+G.buyPlot=()=>{const c=G.plotCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.spend(c,'plot');G.S.plotsOpen++;G.msg('Đã mở thêm 1 ô đất!')};
+G.buyKit=()=>{const c=G.kitCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.spend(c,'kit');G.S.kit++;G.msg('Bếp lên cấp '+G.S.kit+' — nấu nhanh hơn!')};
 G.updateFarm=dt=>{
   G.S.plots.forEach(p=>{if(p)p.t=Math.min(p.t+dt,G.CROPS[p.crop].time)});
   G.S.animals.forEach(a=>{if(a.fed&&!a.ready){a.t+=dt;if(a.t>=G.ANIMALS[a.type].time)a.ready=true}});};
 
 // MUA / BÁN
-G.buy=id=>{const p=G.ITEMS[id].buy;if(G.S.money<p)return G.msg('Không đủ tiền');G.S.money-=p;G.add(id)};
-G.sell=(id,all)=>{const n=all?G.S.inv[id]:1;if(!G.has(id))return;G.S.money+=G.ITEMS[id].sell*n;G.add(id,-n)};
+G.buy=id=>{const p=G.ITEMS[id].buy;if(G.S.money<p)return G.msg('Không đủ tiền');G.spend(p,id.startsWith('hat_')?'seed':'ing');G.add(id)};
+G.sell=(id,all)=>{const n=all?G.S.inv[id]:1;if(!G.has(id))return;G.earn(G.ITEMS[id].sell*n,G.sellCat(id));G.add(id,-n)};
 G.msgText='';G.msg=t=>{G.msgText=t;clearTimeout(G._m);G._m=setTimeout(()=>G.msgText='',2500)};
 
 // NẤU ĂN + KHÁCH HÀNG
@@ -271,7 +262,7 @@ const R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(x|0,y|0,w|0,h|0)};
 const D=(s,x,y,k=1,fl)=>{const w=s.width*k,h=s.height*k;if(fl){cx.save();cx.translate((x|0)+w,y|0);cx.scale(-1,1);cx.drawImage(s,0,0,w,h);cx.restore()}else cx.drawImage(s,x|0,y|0,w,h)};
 const hs=(x,y)=>((x*73856093)^(y*19349663))>>>0;
 const imgs={};
-const IM=(id,x,y,s=16,a=1)=>{const i=imgs[id]||(imgs[id]=Object.assign(new Image(),{src:G.iconUrl(id)}));if(i.complete){cx.globalAlpha=a;cx.drawImage(i,x|0,y|0,s,s);cx.globalAlpha=1}};
+const IM=(id,x,y,s=16,a=1)=>{const i=imgs[id]||(imgs[id]=Object.assign(new Image(),{src:G.iconUrl(id)}));if(i.complete){cx.globalAlpha=a;cx.imageSmoothingEnabled=s<i.width;cx.drawImage(i,x|0,y|0,s,s);cx.imageSmoothingEnabled=false;cx.globalAlpha=1}};
 // CHỮ: mọi chữ trong game đi qua T/TS → xếp hàng → vẽ lên lớp #tx có độ phân giải bằng màn hình (không bị vỡ hạt như canvas pixel), luôn dùng Be Vietnam Pro.
 const FONT='"Be Vietnam Pro",system-ui,sans-serif';
 try{['400','600','800'].forEach(w=>document.fonts&&document.fonts.load(w+' 16px "Be Vietnam Pro"'))}catch(e){}
@@ -290,6 +281,9 @@ G.hot=[];const HOT=(x,y,w,h,fn,o={})=>G.hot.push({x,y,w,h,fn,sx:o.sx??x+w/2,sy:o
 const BUB=(x,y,id,col='#2a1a10')=>{R(x,y,24,22,col);R(x+1,y+1,22,20,'#fffaf0');R(x+10,y+22,4,3,col);R(x+11,y+22,2,2,'#fffaf0');IM(id,x+3,y+2,18)};
 // 10 cột x 6 hàng = 60 ô, đẩy sang phải để chừa đất trống cho nhà bếp bên trái
 G.plotPos=i=>({x:155+(i%10)*28,y:18+Math.floor(i/10)*26});
+// Thứ tự mở khoá ô đất: từ hàng trên xuống dưới, trong mỗi hàng từ phải sang trái. plotOrder(i) = ô thứ mấy được mở.
+G.plotOrder=i=>Math.floor(i/10)*10+(9-i%10);
+G.plotOpen=i=>G.plotOrder(i)<G.S.plotsOpen;
 G.zones={};
 const vig=document.createElement('canvas');vig.width=W;vig.height=H;
 (()=>{const v=vig.getContext('2d'),g=v.createRadialGradient(W/2,H/2,H*.42,W/2,H/2,W*.62);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(10,8,25,.4)');v.fillStyle=g;v.fillRect(0,0,W,H)})();
@@ -312,7 +306,7 @@ G.draw=t=>{G.hot=[];G.txq.length=0;G._tx=0;G._ty=0;G.updateCam();const zn=G.ui.z
 G.P={x:192,y:170,tx:192,ty:170,dir:'d',st:'idle',wt:0,wd:.7,wa:'dig',task:null,lt:0};
 G.fx=[];G.fl=[];G.mk=null;
 const BND={farm:[10,20,500,280],market:[8,20,410,220],kitchen:[10,20,390,210],shop:[10,20,374,186],hub:[12,24,620,340],pets:[10,20,390,210]};
-const START={farm:[200,200],market:[200,160],kitchen:[200,180],shop:[192,142],hub:[300,190],pets:[200,160]};
+const START={farm:[300,62],market:[200,160],kitchen:[200,180],shop:[192,142],hub:[300,190],pets:[200,160]};
 G.P.enter=z=>{const s=START[z]||[W/2,H/2];Object.assign(G.P,{x:s[0],y:s[1],tx:s[0],ty:s[1],st:'idle',task:null,dir:'d'});G.updateCam()};
 // Đi bộ tới POI rồi chuyển khu (không tele ngay)
 // ===== DI CHUYỂN & POI =====
@@ -419,10 +413,10 @@ G.float=(s,x,y,c)=>G.fl.push({s,x,y,c,l:1.2});
 G.fxTap=(x,y)=>G.mk={x,y,t:0};
 function chr(x,y,dir,st,wa,k,t){
  // TAP anim: sheet 64×64 = 4 cột (frame) × 4 hàng (hướng)
- // Hàng 0=xuống, 1=trái, 2=phải, 3=lên
+ // Hàng 0=xuống, 1=trái, 2=lên (quay lưng), 3=phải
  const walking=st==='walk';
  const frame=walking?((t/110|0)%4):((t/400|0)%2); // idle cũng nhịp nhẹ 2 frame
- const dirRow={d:0,l:1,r:2,u:3}[dir]??0;
+ const dirRow={d:0,l:1,u:2,r:3}[dir]??0;
  const img=G.loadImg(walking?G.ASSETS.char1_walk:G.ASSETS.char1_idle);
  // Bóng
  R(x-7,y+1,14,3,'#0005');R(x-5,y+2,10,2,'#0003');

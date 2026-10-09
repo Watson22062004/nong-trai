@@ -1,4 +1,4 @@
-// Làng Bến Dừa: nhà lá, kênh sen, đường lát đá, vườn rau, cổng chibi dẫn vào từng khu.
+// Làng (tên hiển thị lấy từ G.VILLAGE): nhà lá, kênh sen, đường lát đá, vườn rau, cổng chibi dẫn vào từng khu.
 Z.hub={bg:mkBg(b=>{
   const Wd=640;
   [['#7fc0ea',0,30],['#9ccfee',30,24],['#bfe2f4',54,16],['#dff2f8',70,10]].forEach(([c,y,h])=>rr(b,0,y,Wd,h,c));

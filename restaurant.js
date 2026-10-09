@@ -33,7 +33,7 @@ G.updateCustomers=dt=>{const S=G.S,R=G.REST,C=S.customers,F=G.CFG;
       else if(c.st!=='in'){c.p-=dt;if(c.p<=0)mad(c)}}
     else if(c.st==='toseat'){if(mv(c,dt)){c.st='wait';c.p=F.patience;c.dir=0}}
     else if(c.st==='wait'){c.p-=dt;if(c.p<=0)mad(c)}
-    else if(c.st==='eat'){c.eatT-=dt;if(c.eatT<=0){S.money+=c.pay;S.served++;G.addRep(c.fast?3:2);{const nw=Object.keys(G.RECIPES).filter(k=>G.RECIPES[k].unlock===S.served).map(k=>G.RECIPES[k].n);if(nw.length)G.msg('Mở khoá món mới: '+nw.join(', ')+'!')}G.float('+'+c.pay,c.x,c.y-30,'#f2d04a');G.spark(c.x,c.y-20,'#f2d04a',8,100);leave(c)}}
+    else if(c.st==='eat'){c.eatT-=dt;if(c.eatT<=0){G.earn(c.pay,'shop');S.served++;G.addRep(c.fast?3:2);{const nw=Object.keys(G.RECIPES).filter(k=>G.RECIPES[k].unlock===S.served).map(k=>G.RECIPES[k].n);if(nw.length)G.msg('Mở khoá món mới: '+nw.join(', ')+'!')}G.float('+'+c.pay,c.x,c.y-30,'#f2d04a');G.spark(c.x,c.y-20,'#f2d04a',8,100);leave(c)}}
     else if(c.st==='leave'){if(mv(c,dt))c.dead=true}});
   S.customers=S.customers.filter(c=>!c.dead)};
 // Nhận order: khách ở quầy chọn món rồi đi ngồi bàn

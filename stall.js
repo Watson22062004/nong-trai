@@ -3,7 +3,7 @@
 // PHẠT THẬT: đặt sai nguyên liệu (không thuộc món / thừa) → món HỎNG, chỉ còn cách Đổ đi và MẤT hết nguyên liệu đã đặt.
 // Nguyên liệu lấy thẳng từ kho (ruộng + chợ) nên làm nông có ý nghĩa trực tiếp. Công thức dùng chung G.RECIPES.
 (()=>{
-const MENU=['tra_chanh','ca_phe_sua','banh_mi','goi_cuon']; // món bán được ở xe đẩy (mở khoá theo số khách đã phục vụ: G.unlocked)
+const MENU=G.STALL_MENU=['tra_chanh','ca_phe_sua','banh_mi','goi_cuon']; // món bán được ở xe đẩy (mở khoá theo số khách đã phục vụ: G.unlocked)
 const ORD=['tra','chanh','duong','da','ca_phe','sua_dac','bot_mi','thit_heo','ca_rot','rau_thom','banh_trang','tom','bun']; // thứ tự khay
 const SK=['char2_walk','char3_walk','char5_walk','char1_walk'];
 const st=()=>G.S.stall||(G.S.stall={open:false,q:0,cur:null,plate:[],bad:false,spawn:0,gap:0});
@@ -98,7 +98,7 @@ function serve(){
   if(!complete(s))return G.msg('Chưa đủ nguyên liệu cho món này');
   const r=G.RECIPES[c.want],fast=c.p/c.pmax>.5,pay=Math.round(r.price*(fast?1.2:1)*(1+.05*Math.max(0,G.stars()-3)));
   fly={c:dishCanvas(c.want,s.plate),t:performance.now()};
-  S.money+=pay;S.served++;G.addRep(fast?3:2);s.plate=[];c.out='happy';c.ot=0;
+  G.earn(pay,'stall');S.served++;G.addRep(fast?3:2);s.plate=[];c.out='happy';c.ot=0;
   G.float('+'+pay,192,64,'#f2d04a');G.spark(192,90,'#f2d04a',10,100);sn('plate');
   const nw=MENU.filter(k=>G.RECIPES[k].unlock===S.served).map(k=>G.RECIPES[k].n);
   if(nw.length)G.msg('Mở khoá món mới: '+nw.join(', ')+'!');

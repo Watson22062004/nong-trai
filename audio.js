@@ -185,7 +185,7 @@ let prev=null,acc=STRIDE*.5;
 const snap=()=>{const S=G.S,U=G.ui,P=G.P;return{S,zone:U.zone,modal:U.modal,money:S.money,day:S.day,
   pl:S.plots.map(p=>!p?0:p.t>=G.CROPS[p.crop].time?2:1),
   an:S.animals.map(a=>({fed:a.fed,ready:a.ready})),
-  cook:S.cooking.length,rows:S.rows,kit:S.kit,stars:G.stars(),done:G.potDone,pot:Object.assign({},U.pot),m:G._m,
+  cook:S.cooking.length,plots:S.plotsOpen,kit:S.kit,stars:G.stars(),done:G.potDone,pot:Object.assign({},U.pot),m:G._m,
   st:P.st,fxd:P.fxd||0,x:P.x,y:P.y}};
 const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
 const surface=()=>{const z=G.ui.zone,p=G.P;
@@ -231,7 +231,7 @@ function tick(){
     if(!a.ready&&o.ready)col=G.ANIMALS[a.type].make});
   if(col)SND.collect(col);
   // nâng cấp / lên sao
-  if(S.rows>q.rows){SND.dig();SND.unlockChime()}
+  if(S.plotsOpen>q.plots)SND.dig();
   if(S.kit>q.kit){SND.clank();SND.ding(1)}
   if(G.stars()>q.stars)SND.unlockChime();
   // tiền
@@ -269,14 +269,14 @@ addEventListener('pointerdown',e=>{
   const t=e.target;if(!t||!t.closest)return;
   if(t.id==='cv'){if(!G.ui.modal&&G.P.st!=='work')SND.tap();return}
   const b=t.closest('button');if(!b||b.id==='sndbtn')return;
-  const d=b.dataset;if(d.modal!==undefined||['buy','sell','sellall','animal','go','add','rows','kit','harvestall','again','shopopen','shopclose'].includes(d.act))return;
+  const d=b.dataset;if(d.modal!==undefined||['buy','sell','sellall','animal','go','add','plot','kit','harvestall','again','shopopen','shopclose'].includes(d.act))return;
   SND.tick(d.act==='slot'?1.15:1)},true);
 ['pointerup','touchend','click','keydown'].forEach(ev=>addEventListener(ev,unlock,true));
 document.addEventListener('visibilitychange',()=>{if(!ac)return;if(document.hidden)ac.suspend();else if(on)ac.resume()});
 
-// ===== Nút bật/tắt âm thanh (nhỏ, dưới nhãn khu vực góc phải) =====
+// ===== Nút bật/tắt âm thanh (nhỏ, dưới hàng nút nhiệm vụ/sổ sách ở góc phải) =====
 const css=document.createElement('style');
-css.textContent='#sndbtn{position:absolute;top:calc(var(--u)*5.4);right:calc(var(--u)*1.1);z-index:4;width:calc(var(--u)*3.8);height:calc(var(--u)*3.8);padding:0;border-radius:50%;border:2px solid var(--ink);background:linear-gradient(#fffaf2,#f4e4c4);box-shadow:0 2px 0 #1a100866;cursor:pointer;opacity:.88;display:flex;align-items:center;justify-content:center}#sndbtn svg{width:62%;height:62%;display:block}#sndbtn:active{transform:translateY(2px);box-shadow:none}';
+css.textContent='#sndbtn{position:absolute;top:calc(var(--u)*6);right:calc(var(--u)*1.1);z-index:4;width:calc(var(--u)*3.8);height:calc(var(--u)*3.8);padding:0;border-radius:50%;border:2px solid var(--ink);background:linear-gradient(#fffaf2,#f4e4c4);box-shadow:0 2px 0 #1a100866;cursor:pointer;opacity:.88;display:flex;align-items:center;justify-content:center}#sndbtn svg{width:62%;height:62%;display:block}#sndbtn:active{transform:translateY(2px);box-shadow:none}';
 document.head.appendChild(css);
 const btn=document.createElement('button');btn.id='sndbtn';btn.type='button';
 const icon=()=>{btn.title=on?'Tắt âm thanh':'Bật âm thanh';btn.setAttribute('aria-label',btn.title);
