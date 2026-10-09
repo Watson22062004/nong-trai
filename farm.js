@@ -1,13 +1,14 @@
 Z.farm={bg:mkBg(b=>{
   grass(b);
-  // Chuồng mái lá bên phải
-  rr(b,392,28,118,128,'#6b4423');
-  rr(b,396,34,110,118,'#c4a06a');
-  for(let y=36;y<148;y+=7)rr(b,396,y,110,1,'#a8844a');
-  for(let i=0;i<28;i++)rr(b,400+hs(i,3)%96,40+hs(i,4)%100,6,1,'#e8cd6e');
-  rr(b,388,22,126,8,'#8b5a2b');rr(b,396,14,110,10,'#d8b56a');rr(b,408,8,86,8,'#e8c878');
-  for(let x=392;x<510;x+=24){rr(b,x,18,4,18,'#5a3a20');rr(b,x,146,4,14,'#5a3a20')}
-  rr(b,404,128,90,8,'#6b4423');rr(b,408,124,18,6,'#8fc8e0'); // máng nước
+  // Chuồng mái lá bên phải: nền rơm, vách ván phía sau, mái rơm, 2 cột lớn, máng nước
+  rr(b,396,34,110,118,'#d4b27a');
+  for(let i=0;i<46;i++){const x=398+hs(i,3)%104,y=38+hs(i,4)%110;rr(b,x,y,5+hs(i,5)%4,1,i%3?'#e8cd6e':'#b88a4a')}
+  [[430,100,16,6],[470,70,14,5],[444,140,18,5]].forEach(([x,y,w,h])=>{rr(b,x,y,w,h,'#c49a60');rr(b,x+1,y,w-2,1,'#b88a4a')});
+  A.walls(b,392,28,122,30,'#a8733a',0);rr(b,396,56,110,2,'#8a5a30');
+  A.thatch(b,384,8,138,26,'#d8b56a');
+  blk(b,388,30,6,128,'#6b4423');blk(b,506,30,6,128,'#6b4423');for(let y=36;y<150;y+=9){rr(b,389,y,1,5,'#8b5a2b');rr(b,507,y,1,5,'#8b5a2b')}
+  blk(b,404,126,90,10,'#8b5a2b');rr(b,408,128,82,4,'#6cb6dd');rr(b,410,128,30,1,'#a8d8f0');rr(b,404,126,90,1,'#a8733a');
+  A.hay(b,402,148,7);A.hay(b,498,148,7);
   // Đường đất ra cổng làng
   rr(b,0,198,520,26,'#c4a06a');rr(b,0,198,520,3,'#a8844a');rr(b,0,221,520,3,'#a8844a');
   river(b,248);
@@ -28,8 +29,7 @@ Z.farm={bg:mkBg(b=>{
    R(x,y,24,24,'#5a3a20');
    R(x+1,y+1,22,22,'#b07a42');R(x+2,y+2,20,20,'#c48a52');
    R(x+3,y+6,18,1,'#9a6a38');R(x+3,y+12,18,1,'#9a6a38');R(x+3,y+18,18,1,'#9a6a38');
-   if(p){const c=G.CROPS[p.crop],g=p.t/c.time,s=g<.33?SP.sprout:g<1?SP.grow:SP[p.crop];
-    D(s,x+12-s.width/2,y+22-s.height)}
+   if(p){const s=G.plantSprite(p.crop,G.plantStage(p));D(s,x+12-s.width/2,y+23-s.height)}
    HOT(x,y,24,24,()=>G.plotClick(i),{sx:x+12,sy:y+28,anim:'dig'})});
   S.plots.forEach((p,i)=>{if(p&&p.t>=G.CROPS[p.crop].time){const{x,y}=G.plotPos(i),by=y-8+Math.sin(t/200+i)*2;BUB(x+1,by,p.crop)}});
   S.animals.forEach((a,i)=>{const bx=408+(i%2)*50,by=40+Math.floor(i/2)*32,wk=Math.sin(t/900+i*2)*4;

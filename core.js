@@ -132,12 +132,6 @@ const CUST2=['...eeee...','..eeeeee..','.eeeeeeee.','..pkppkp..','..pppppp..','.
 const CUST3=['...eeee...','..eeeeee..','.eeeeeeee.','..pkppkp..','..pppppp..','..prrrp...','...mmmm...','..mmmmmm..','.pmmmmmmp.','..mmmmmm..','..BB..BB..','..BB..BB..'];
 const CUST4=['...eeee...','..eeeeee..','.eeeeeeee.','..pkppkp..','..pppppp..','...rrr....','...ffff...','..ffffff..','.pffffffp.','..ffffff..','..BB..BB..','..BB..BB..'];
 G.SP={
- sprout:mk(['............','............','....g..g....','...gG..Gg...','....gGGg....','.....GG.....','.....G......','.....G......']),
- grow:mk(['............','..g......g..','..gG....Gg..','...gG..Gg...','....gGGg....','..g..GG..g..','..gG.GG.Gg..','...gGGGGg...','.....GG.....','.....GG.....','.....GH.....','.....H......']),
- nep:mk(['........yy..','.......yYy..','..yy..yYy...','.yYy.yYy.yy.','.yYyyYy.yYy.','..yYYy..yYy.','...GyY.GyY..','...GG.GG.G..','....GGG.G...','....GGGG....','.....GG.....','.....GG.....','.....GH.....','.....H......']),
- dau_xanh:mk(['....g..g....','..g.gG.Gg.g.','.gGgGGGGgGGg','.GGHGGGGHGGG','.gGGHGGGHGGg','..GGHGGHGGG.','.gGGGGGGGGg.','..GGHGGHGG..','...GGGGGG...','....GGGG....','.....GG.....','.....GH.....','.....H......']),
- hanh:mk(['..g.....g...','..g..g..g...','.gG..g.gG...','.gG.gG.gG.g.','.gGgGG.Gg.g.','gGgGGGgGGgG.','gGGGGGGGGGG.','HGGGGGGGGGH.','.GGGGGGGGG..','..eGGeGGe...','..eeeeeee...','..eEeEeEe...','...BBBBB....']),
- dua:mk(['..G..gg..G..','.GgG.gG.GgG.','GgGGgGGgGGgG','.GGGgbbgGGG.','...gbwbbg...','....bbbb....','.....nB.....','.....nB.....','.....nB.....','.....nB.....','.....nB.....','....nnBB....']),
  ga:mk(['......r...','.....eee..','....eekeo.','..eeeeeeo.','.eeeeeeee.','.eEeeeee..','..eEEEe...','...o.o....','..oo.oo...']),
  bo:mk(['................','..eeeeeeeee.nn..','.eeBBeeeeeeenn..','.eeBBeeeBBeeeee.','.eeeeeeeBBeeeke.','.eeeeeeeeeeeepp.','.eEeeeeeeeEeepp.','..ee.eeee.ee.pp.','..BB.BBBB.BB....','..BB......BB....']),
  // Nhà bếp nâng cấp (ngói đỏ, tường vàng, 2 cửa sổ, hiên)
@@ -321,15 +315,14 @@ G.goZone=zone=>{
 G.travelTo=(zone,sx,sy)=>G.P.go(sx,sy,()=>G.goZone(zone));
 // Cổng pixel: bấm → đi tới cửa → vào zone. Không còn biển chữ.
 function roof(x,y,w,c){R(x,y,w,4,c);R(x+2,y-3,w-4,3,c);R(x+5,y-5,w-10,2,'#f2d9a0')}
-const poiSign=(x,y,w,t)=>{blk(cx,x-w/2,y,w,13,'#5a3a20');rr(cx,x-w/2+2,y+2,w-4,9,'#8b5a2b');TS(t,x,y+10,'#ffe7a8',8)};
-function poiShop(x,y,lb){const b=cx,L=x-40;
-  blk(b,L+4,y-34,72,34,'#e8c888');for(let i=0;i<8;i++)rr(b,L+9+i*8,y-30,1,28,'#d0a868');
-  blk(b,L-2,y-47,84,14,'#c0402a');blk(b,L+6,y-57,68,12,'#d8553a');blk(b,L+16,y-63,48,8,'#e86848');
-  for(let i=0;i<20;i++)rr(b,L+1+i*4,y-45,1,10,'#8a2d1c');
-  blk(b,L+10,y-22,13,12,'#9bd0e8');blk(b,L+57,y-22,13,12,'#9bd0e8');
-  blk(b,L+28,y-22,24,22,'#3a2412');rr(b,L+30,y-20,20,18,'#d8402e');rr(b,L+39,y-20,2,18,'#a8301e');
+const poiSign=(x,y,w,t,b=cx)=>{blk(b,x-w/2,y,w,13,'#5a3a20');rr(b,x-w/2+2,y+2,w-4,9,'#8b5a2b');rr(b,x-w/2+2,y+2,w-4,1,'#a8733a');TS(t,x,y+10,'#ffe7a8',8)};
+function poiShop(x,y,lb,b=cx){const L=x-40;
+  A.walls(b,L+4,y-34,72,34,'#ecd29a');
+  A.tiles(b,L-4,y-62,88,28,'#c0402a');
+  A.win(b,L+10,y-24,13,12,{sh:'#3b8a8a',box:1});A.win(b,L+57,y-24,13,12,{sh:'#3b8a8a',box:1});
+  A.door(b,L+29,y-22,22,22,'#d8402e');
   A.lantern(b,L+1,y-33,'#d8402e');A.lantern(b,L+71,y-33,'#f2a82a');
-  poiSign(x,y-37,62,lb);A.pot(b,L-10,y-16,'#3b8a8a');A.bush(b,L+82,y-14,'#5fb04a')}
+  poiSign(x,y-37,62,lb,b);A.pot(b,L-10,y-16,'#3b8a8a');A.bush(b,L+82,y-14,'#5fb04a')}
 // XE ĐẨY: hình đổi theo cấp quán G.S.tier. Thêm cấp mới = thêm 1 hàm vào POI_TIER (cấp 2, 3 sẽ nối tiếp ở đây)
 function poiCovered(x,y,lb){const b=cx,L=x-28;                       // cấp 0: xe cũ của bà, phủ bạt, kèm bảng giá sửa
   [L+10,L+46].forEach(wx=>{orb(b,wx,y-7,7,OL);orb(b,wx,y-7,5,'#6b4423');orb(b,wx,y-7,2,'#d8b88a')});
@@ -350,27 +343,39 @@ function poiCart(x,y,lb){const b=cx,L=x-28;                          // cấp 1:
   poiSign(x,y-70,44,lb)}
 const POI_TIER=[poiCovered,poiCart];
 const poiStall=(x,y,lb)=>POI_TIER[Math.min(G.S.tier|0,POI_TIER.length-1)](x,y,G.S.tier>0?lb:'Xe cũ');
-function poiMarket(x,y,lb){const b=cx,L=x-46;
-  blk(b,L+4,y-40,84,40,'#f6ecd2');blk(b,L,y-40,6,40,'#8b5a2b');blk(b,L+86,y-40,6,40,'#8b5a2b');
-  for(let i=0;i<11;i++)blk(b,L-2+i*8,y-56,9,16,i%2?'#fffaf0':'#d8402e');
-  for(let i=0;i<11;i++)orb(b,L+3+i*8,y-41,4,i%2?'#fffaf0':'#d8402e');
-  poiSign(x,y-36,70,lb);blk(b,L+4,y-9,84,9,'#a8733a');
-  A.crate(b,L+8,y-22,16,13);A.basket(b,L+30,y-23,'#e8483a');A.basket(b,L+52,y-23,'#f2d04a');A.sack(b,L+72,y-27);
+function poiMarket(x,y,lb,b=cx){const L=x-46;
+  A.walls(b,L+6,y-42,80,32,'#f0e2c0',0);                                    // vách sau
+  blk(b,L,y-44,6,44,'#8b5a2b');blk(b,L+86,y-44,6,44,'#8b5a2b');rr(b,L+1,y-42,1,40,'#a8733a');rr(b,L+87,y-42,1,40,'#a8733a'); // hai cột
+  A.awning(b,L-4,y-58,100,16);                                              // mái hiên vải sọc
+  A.hang(b,L+14,y-43,1);A.hang(b,L+42,y-43,0);A.hang(b,L+78,y-43,2);       // tỏi · ớt · bắp treo
+  poiSign(x,y-36,70,lb,b);
+  A.walls(b,L+2,y-10,88,10,'#a8733a',0);blk(b,L,y-13,92,4,'#c89a5a');rr(b,L+2,y-12,88,1,'#e0b878');   // quầy gỗ + mặt quầy
+  A.crate(b,L+8,y-26,16,13);[[L+11,'#e8483a'],[L+16,'#d8402e'],[L+20,'#e8483a'],[L+14,'#f06a4a']].forEach(([ox,c],i)=>orb(b,ox,y-27-(i>2?2:0),3,c));
+  A.basket(b,L+30,y-23,'#e8483a');A.basket(b,L+52,y-23,'#f2d04a');
+  [[L+54,y-26],[L+58,y-25],[L+56,y-28]].forEach(([ox,oy])=>orb(b,ox,oy,3,'#f2d04a'));
+  A.sack(b,L+72,y-27);rr(b,L+75,y-29,4,2,'#fffaf0');rr(b,L+74,y-30,6,1,'#e6dcc0');                  // bao gạo đầy
+  blk(b,L+40,y-18,10,6,'#2a3a2a');rr(b,L+42,y-16,6,1,'#fff');rr(b,L+42,y-14,4,1,'#f2d04a');                // bảng phấn giá
   A.lantern(b,L-6,y-34,'#f2a82a');A.lantern(b,L+90,y-34,'#5fb04a')}
-function poiFarm(x,y,lb){const b=cx,L=x-38;
-  orb(b,L-6,y-8,8,'#e8c050');orb(b,L+84,y-9,9,'#e0b848');
-  blk(b,L+4,y-30,70,30,'#c49a60');for(let i=0;i<9;i++)rr(b,L+8+i*7,y-27,1,26,'#a8783c');
-  blk(b,L-2,y-44,82,16,'#d8b050');blk(b,L+8,y-54,62,12,'#e0c060');blk(b,L+20,y-61,38,8,'#ecd078');
-  for(let i=0;i<20;i++)rr(b,L+1+i*4,y-42,1,12,'#a87838');
-  blk(b,L+31,y-20,16,20,'#6b4423');rr(b,L+43,y-10,2,2,'#f2d04a');
-  blk(b,L+8,y-22,12,10,'#9bd0e8');blk(b,L+58,y-22,12,10,'#9bd0e8');
-  poiSign(x,y-36,56,lb);A.crate(b,L-4,y-12,14,12);A.bush(b,L+62,y-14)}
-function poiPets(x,y,lb){const b=cx,L=x-40;
-  blk(b,L+2,y-36,76,36,'#a8573a');for(let i=0;i<9;i++)rr(b,L+6+i*8,y-33,1,32,'#8a4228');
-  blk(b,L-4,y-48,88,14,'#d8553a');blk(b,L+8,y-58,64,12,'#e86848');for(let i=0;i<22;i++)rr(b,L-2+i*4,y-46,1,10,'#a8402a');
-  blk(b,L+28,y-26,24,26,'#3a2412');rr(b,L+39,y-24,2,24,'#6b4423');
-  orb(b,x-6,y-13,5,'#fffaf0');rr(b,x-8,y-20,3,2,'#d8402e');rr(b,x-2,y-12,3,2,'#e8863a');
-  blk(b,L+62,y-14,16,14,'#e8c050');poiSign(x,y-37,64,lb);A.flower(b,L-2,y-8,'#f6b0c0');A.flower(b,L+84,y-8,'#f2d04a')}
+function poiFarm(x,y,lb,b=cx){const L=x-38;
+  A.hay(b,L-6,y-8,8);A.hay(b,L+84,y-9,9);                                   // hai đống rơm
+  A.walls(b,L+4,y-30,70,30,'#c49a60');
+  A.thatch(b,L-6,y-62,88,36,'#d8b050');
+  A.win(b,L+34,y-54,10,7,{});                                              // cửa sổ gác mái
+  A.door(b,L+31,y-19,16,19);
+  A.win(b,L+9,y-22,12,9,{sh:'#5f9a4a',box:1});A.win(b,L+57,y-22,12,9,{sh:'#5f9a4a',box:1});
+  A.hang(b,L+25,y-26,1);A.hang(b,L+52,y-26,0);
+  poiSign(x,y-36,56,lb,b);
+  A.crate(b,L-4,y-12,14,12);A.bush(b,L+62,y-14);
+  rr(b,L+66,y-33,2,31,'#8b5a2b');rr(b,L+63,y-5,8,2,'#6b4423');[63,65,67,69].forEach(q=>rr(b,q,y-3,1,3,'#6b4423'))}  // cào dựa tường
+function poiPets(x,y,lb,b=cx){const L=x-40;
+  A.walls(b,L+2,y-36,76,36,'#b86a46');
+  A.tiles(b,L-6,y-60,92,26,'#d8553a');
+  A.win(b,L+7,y-27,10,9,{sh:'#8a4228',box:1});A.win(b,L+63,y-27,10,9,{sh:'#8a4228',box:1});
+  blk(b,L+26,y-28,28,28,'#3a2412');rr(b,L+28,y-26,24,3,'#4a3018');rr(b,L+28,y-9,24,9,'#e0b848');           // cửa chuồng + rơm
+  for(let q=L+29;q<L+51;q+=3)rr(b,q,y-8,1,7,'#b88a28');rr(b,L+39,y-26,2,26,'#6b4423');
+  orb(b,x-6,y-13,5,'#fffaf0');rr(b,x-8,y-20,3,2,'#d8402e');rr(b,x-2,y-12,3,2,'#e8863a');rr(b,x-9,y-14,1,1,'#2a1a10');
+  blk(b,L+62,y-14,16,14,'#e8c050');rr(b,L+64,y-12,12,2,'#c89a30');A.hay(b,L-2,y-7,7);
+  poiSign(x,y-37,64,lb,b);A.flower(b,L-2,y-8,'#f6b0c0');A.flower(b,L+84,y-8,'#f2d04a')}
 function poiGate(x,y,lb){const b=cx;
   blk(b,x-26,y-36,8,36,'#a8a8a0');blk(b,x+18,y-36,8,36,'#a8a8a0');
   blk(b,x-30,y-44,60,9,'#c0402a');blk(b,x-22,y-50,44,7,'#d8553a');

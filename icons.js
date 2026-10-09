@@ -2,30 +2,31 @@
 // Mỗi icon là 1 hàm trong PAINT[id]: vẽ lên lưới bằng ball (khối tròn có sáng/tối), strip (lá, củ, trái dài), rect, line...
 // Ánh sáng luôn từ trên-trái. Thêm icon mới: thêm 1 hàm vào PAINT. Icon chưa có trong PAINT rơi về bộ icon cũ ở core.js (balo, sách, sao...).
 (()=>{
-const N=16,OL='#2a1a10';
+let N=16,M=16; // kích thước lưới hiện tại (icon 16×16; sprite cây do plants.js đặt qua G.paint.build)
+const OL='#2a1a10';
 const hex=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));
 const sh=(c,a)=>{const f=a<0?0:255,t=Math.abs(a);return'#'+hex(c).map(n=>Math.round(n*(1-t)+f*t).toString(16).padStart(2,'0')).join('')};
 let g;
-const px=(x,y,c)=>{x=Math.floor(x);y=Math.floor(y);if(x>=0&&y>=0&&x<N&&y<N)g[y*N+x]=c};
+const px=(x,y,c)=>{x=Math.floor(x);y=Math.floor(y);if(x>=0&&y>=0&&x<N&&y<M)g[y*N+x]=c};
 const rect=(x,y,w,h,c)=>{for(let j=0;j<h;j++)for(let i=0;i<w;i++)px(x+i,y+j,c)};
 const line=(x0,y0,x1,y1,c)=>{x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx+dy;
  for(;;){px(x0,y0,c);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>=dy){e+=dy;x0+=sx}if(e2<=dx){e+=dx;y0+=sy}}};
 // ellipse phẳng
-const ell=(cx,cy,rx,ry,c)=>{for(let y=0;y<N;y++)for(let x=0;x<N;x++){const dx=(x+.5-cx)/rx,dy=(y+.5-cy)/ry;if(dx*dx+dy*dy<=1)px(x,y,c)}};
+const ell=(cx,cy,rx,ry,c)=>{for(let y=0;y<M;y++)for(let x=0;x<N;x++){const dx=(x+.5-cx)/rx,dy=(y+.5-cy)/ry;if(dx*dx+dy*dy<=1)px(x,y,c)}};
 // khối tròn có sáng/tối (sáng trên-trái, tối dưới-phải, có điểm bóng)
-const ball=(cx,cy,rx,ry,c,spec=1)=>{for(let y=0;y<N;y++)for(let x=0;x<N;x++){const dx=(x+.5-cx)/rx,dy=(y+.5-cy)/ry,d=dx*dx+dy*dy;if(d>1)continue;
+const ball=(cx,cy,rx,ry,c,spec=1)=>{for(let y=0;y<M;y++)for(let x=0;x<N;x++){const dx=(x+.5-cx)/rx,dy=(y+.5-cy)/ry,d=dx*dx+dy*dy;if(d>1)continue;
  const v=dx*.5+dy*.75;let col=c;if(v>.55)col=sh(c,-.3);else if(v>.22)col=sh(c,-.14);else if(v<-.5&&d>.08)col=sh(c,.22);px(x,y,col)}
  if(spec&&rx>2.4)px(cx-rx*.42,cy-ry*.46,sh(c,.6))};
 // dải có độ rộng thay đổi dọc theo đoạn thẳng: prof(t)= bán kính tại vị trí t∈[0,1]; tô sáng/tối theo mặt
 const strip=(x0,y0,x1,y1,prof,c,flat)=>{const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L;
- for(let y=0;y<N;y++)for(let x=0;x<N;x++){const ax=x+.5-x0,ay=y+.5-y0,t=(ax*ux+ay*uy)/L;if(t<0||t>1)continue;const s=ax*-uy+ay*ux,r=prof(t);if(Math.abs(s)>r)continue;
+ for(let y=0;y<M;y++)for(let x=0;x<N;x++){const ax=x+.5-x0,ay=y+.5-y0,t=(ax*ux+ay*uy)/L;if(t<0||t>1)continue;const s=ax*-uy+ay*ux,r=prof(t);if(Math.abs(s)>r)continue;
   const k=s/Math.max(r,.01);px(x,y,flat?c:k>.45?sh(c,-.22):k<-.45?sh(c,.2):c)}};
 const lf=t=>Math.sin(Math.PI*Math.min(1,t*.92+.04));      // dáng lá (nhọn hai đầu)
 const tp=t=>1-t*.9;                                           // dáng củ (to rồi nhọn)
 const bar=t=>1;                                               // đều
 const dots=(a,c)=>a.forEach(([x,y])=>px(x,y,c));
 const tri=(x0,y0,x1,y1,x2,y2,c)=>{const A=(x,y)=>(x1-x0)*(y-y0)-(y1-y0)*(x-x0);const s=Math.sign((x1-x0)*(y2-y0)-(y1-y0)*(x2-x0));
- for(let y=0;y<N;y++)for(let x=0;x<N;x++){const px_=x+.5,py=y+.5,a=((x1-x0)*(py-y0)-(y1-y0)*(px_-x0))*s,b=((x2-x1)*(py-y1)-(y2-y1)*(px_-x1))*s,d=((x0-x2)*(py-y2)-(y0-y2)*(px_-x2))*s;if(a>=0&&b>=0&&d>=0)px(x,y,c)}};
+ for(let y=0;y<M;y++)for(let x=0;x<N;x++){const px_=x+.5,py=y+.5,a=((x1-x0)*(py-y0)-(y1-y0)*(px_-x0))*s,b=((x2-x1)*(py-y1)-(y2-y1)*(px_-x1))*s,d=((x0-x2)*(py-y2)-(y0-y2)*(px_-x2))*s;if(a>=0&&b>=0&&d>=0)px(x,y,c)}};
 
 // ---------- khung dùng chung ----------
 // tô nền ellipse chỉ trong vùng đã vẽ (dùng để đổ thức ăn lên bát/đĩa)
@@ -132,14 +133,18 @@ Object.assign(PAINT,{
 
 
 // ---------- xuất ảnh ----------
+// build(w,h,fn): chạy fn vẽ lên lưới w×h rồi thêm viền đậm 1px → {w,h,o} (o = mảng màu (w+2)×(h+2)); xong trả lưới về 16×16
+const build=(w,h,fn)=>{const oN=N,oM=M;N=w;M=h;g=Array(N*M).fill(null);fn();
+ const W=N+2,H=M+2,o=Array(W*H).fill(null),at=(x,y)=>x>=0&&y>=0&&x<N&&y<M?g[y*N+x]:null;
+ for(let y=-1;y<=M;y++)for(let x=-1;x<=N;x++){const v=at(x,y);o[(y+1)*W+x+1]=v||(at(x+1,y)||at(x-1,y)||at(x,y+1)||at(x,y-1)?OL:null)}
+ N=oN;M=oM;return{w:W,h:H,o}};
+const toCanvas=b=>{const c=document.createElement('canvas');c.width=b.w;c.height=b.h;const x=c.getContext('2d');
+ b.o.forEach((v,i)=>{if(v){x.fillStyle=v;x.fillRect(i%b.w,(i/b.w)|0,1,1)}});return c};
 const cacheP={},cacheU={};
-// pixel 18×18 (có viền): trả về mảng màu hoặc null
-G.iconPixels=id=>{if(!PAINT[id])return null;if(cacheP[id])return cacheP[id];g=Array(N*N).fill(null);PAINT[id]();
- const W=N+2,o=Array(W*W).fill(null),at=(x,y)=>x>=0&&y>=0&&x<N&&y<N?g[y*N+x]:null;
- for(let y=-1;y<=N;y++)for(let x=-1;x<=N;x++){const v=at(x,y);o[(y+1)*W+x+1]=v||(at(x+1,y)||at(x-1,y)||at(x,y+1)||at(x,y-1)?OL:null)}
- return cacheP[id]=o};
+G.iconPixels=id=>{if(!PAINT[id])return null;return cacheP[id]||(cacheP[id]=build(16,16,PAINT[id]).o)};
 const _iu=G.iconUrl;
-G.iconUrl=id=>{if(!PAINT[id])return _iu(id);if(cacheU[id])return cacheU[id];const o=G.iconPixels(id),W=N+2,c=document.createElement('canvas');c.width=c.height=W;const x=c.getContext('2d');
- o.forEach((v,i)=>{if(v){x.fillStyle=v;x.fillRect(i%W,(i/W)|0,1,1)}});return cacheU[id]=c.toDataURL()};
+G.iconUrl=id=>{if(!PAINT[id])return _iu(id);return cacheU[id]||(cacheU[id]=toCanvas({w:N+2,h:M+2,o:G.iconPixels(id)}).toDataURL())};
 G.iconIds=()=>Object.keys(PAINT);
+// bộ công cụ vẽ cho file khác (plants.js vẽ sprite cây lớn hơn icon)
+G.paint={px,rect,line,ell,ball,strip,tri,dots,sh,lf,tp,bar,build,toCanvas};
 })();
