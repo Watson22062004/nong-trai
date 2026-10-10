@@ -57,9 +57,15 @@ G.RECIPES = { // cat: nhóm món · need: nguyên liệu · time: giây nấu ·
 G.CATS={xoi:'Xôi',com:'Cơm · Cháo',nuoc:'Bún · Phở · Mì',chinh:'Món chính',ngot:'Ngọt · Uống'};
 G.unlocked=k=>G.S.served>=(G.RECIPES[k].unlock||0);
 for(const k in G.RECIPES)G.ITEMS[k]={n:G.RECIPES[k].n,e:G.RECIPES[k].e,sell:Math.floor(G.RECIPES[k].price*.6)};
+// Món nấu theo SAO: 1★ là id gốc (giữ tương thích save cũ); 2★ và 3★ là vật phẩm riêng id+'_2' / id+'_3', giá bán ×1.4 và ×1.9
+G.STAR_MUL=[1,1.4,1.9];
+for(const k in G.RECIPES)[2,3].forEach(s=>{const b=G.ITEMS[k];G.ITEMS[k+'_'+s]={n:b.n+' '+'★'.repeat(s),e:b.e,sell:Math.floor(G.RECIPES[k].price*.6*G.STAR_MUL[s-1]),star:s,base:k}});
+G.starOf=id=>(G.ITEMS[id]&&G.ITEMS[id].star)||1;G.baseOf=id=>(G.ITEMS[id]&&G.ITEMS[id].base)||id;
+G.dishId=(r,s)=>s>1?r+'_'+s:r;
+G.dishStock=(r,min=1)=>[1,2,3].filter(s=>s>=min).reduce((n,s)=>n+(G.S.inv[G.dishId(r,s)]||0),0);
 G.CFG = {plots:60,maxAnimals:8,maxCustomers:5,customerEvery:8,patience:50,startMoney:80,
   // world size per zone (larger than canvas for camera follow)
-  world:{farm:{w:520,h:300},market:{w:420,h:240},kitchen:{w:400,h:230},shop:{w:384,h:216},hub:{w:640,h:360},pets:{w:400,h:230}}};
+  world:{farm:{w:700,h:400},market:{w:420,h:240},kitchen:{w:400,h:230},shop:{w:384,h:216},hub:{w:640,h:360},pets:{w:400,h:230}}};
 G.ASSETS={
   house_red:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAu5JREFUeJztm89rGkEUx7+GtBehIGiViqdCoFAWCgmtkHgITf6AXPInCOle9tyz573Ygn9CoPQPaCWUNCUpWyhIQAj0JG1dEiiUevJgD3HMur8cx12fszufm/Nmd958nZ15+3xm4CBf0kZICTf9TgYAMqwhX9JGrWKRzqMlU7dt3PQ7mXVqR6KgbtuBtllfqvQC1G0bptkMtht6qAjSC8AwDB1Pn+1NPl9+/xgqDCMxAgC3k56XtRj8kIrErACe5e5HIgT4ctEVvlY9AtQOLEqrWAQ+vQu0780TB4QFFEllHbgNg19vPYFWyVL7szQ6vQEaFkap3wOUANQOUDPZBLVKFrsvH1D6slzaACyHAG++/kCnVyL0aLl8/tUHoB6B6TigYYmHlLJRK+cAjFNiLBfolzio23ZoQkFWOwv61oC7BGHa8OQEqw//eTq1UPRtl94+jvpTvwkqAagdoEYJQO0ANUoAageoUQJQO0CNEoDaAWqUANQOUKMEoHaAmqkiqWvjnqdDwRzCr112e8EcehMiv9v3fW4xDGiX3T4E4FgBgH+dYK2cw+nPP4G3l9XuqRME7n4kTToNqzsRQG2C7oZ8SRuxnHnY0pIN55ycWXDfCpFXzx8DAHZ6AzSsrnAB0ipgGDqctQ+n779N2VP/CHDXCG1XNwAAWy/2Y3MGAKyLD5Hd6+z8amYfoSKp67e7IpfNpHB04mk7O7+CYegzrzXN5uRLmoeVrxIzDJ1L8MKRLrR6hAQ4af8VuUyYOMebWwDTbOJwvLNG9XM6u1fYaXPo2r2dHB9sCo8tfApolexCAzOODzZJy/NSfwwqAagdoGblj0FGrZzDziNvFRur9hJFGgHY+4kbreLfzsvKC8COXZ5+Iqy8ANvVDa7JiYTBgAQCAOKT4yEWAZz/33Mi8re2uOESgOdtjBE0eWYLE2GecaKCSwB3yBsUl4dN3tknSIQoQms3Ye8QAIcAtXIOnd7A0+bHIkvcb5woCPKV8R+4dCHhyY0x/wAAAABJRU5ErkJggg==",
   house_blue:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAuZJREFUeJztmzFr20AUx/8O3gwFgwKixnQomAaKoBDTpjgeQtupU5Z8h1SL5syetbj9DoHSD9CEDGlKUlQImIKLoYMRLYIGCgXP6uCcK1k6+XyR/XSSfpN9T7p799fp7t35uYIAmm74KAg33qACAFVWoOmGrzcf0Hm0fvwbb1CpLr4u+3jumGtb9FCVF8Bzx7DtPtduWWaiCMoLwLAsE4+fvJx9/3Z9kigMIzcCANNOL8vGCvxQityMAJHhHkcuBPh8NZS+t/CvQIV9KFog5LljRAKhpIAir1SB6dM/am/BaNao/VkbA3eCngO/8HNAKQC1A9TMJkGjWcPei3uUvqyXUwBOQIC3X35g4OqEHq2XT788AOUrEA6Fe458SKka3UYdwG0kyM4C4yJBzx0nHiioamdB3wbw/4CwaERCYU1rxV7IK1fZHhoBRaYUgNoBakoBqB2gphSA2gFqSgGoHaCmFIDaAWpKAagdoKYUgNoBakLnAY9a0X3z++sTdJ6/5lagqp0lU4QE+D4axVbCK8+DPXQUFpcn2G3Ucf7zD7cCVe3sGDAiwFF7i1tZXug5w5kAhZ8EI6fBmm747Mw8aWipRrBPwVPw2ByhN08fAgB23Ql6zlA6ASkLWJaJYO7D+YevIXvhXwHhLLHOzjRGaD97tTJnAMC5+phaXReXycsjIJkm9/vdnsxtC9k8PIuUXVyOYFnmwnttuz97SMuQ+TxByzKFBN88NKVGj5QAZ6d/ZW6TZpXtLS2AbfdxcDuzpvVzOqsrabU5mJu9gxzvb0u3Lb0KGM3anRpmHO9vk6bnFX4ZLAWgdoCazC+DjG6jjt370Sw2lu0lizICsP3JPEYzvlyUzAvAll2R62TIvACdnZZQ52TCYEABAQD5zomwEgGC/98LIvO3tlUjJIDIbozB6zyzJYmwTDtpISTAfMjLi8uTOh+8hidCGqH1PEl7CEBAgG6jjoE7iZTFcZchHtdOGvB8ZfwDdlcVM4YpSDsAAAAASUVORK5CYII=",
@@ -223,11 +229,12 @@ G.harvestAll=()=>{let n=0;
   G.S.animals.forEach((a,i)=>{if(a.ready){G.collect(i);n++}});
   G.msg(n?'Thu hoạch '+n+' mục':'Chưa có gì để thu hoạch');return n};
 // NÂNG CẤP: mở ruộng từng ô một (ô mua đầu tiên 200 xu, mỗi ô sau ×1.35, tối đa 200000 xu/ô; 10 ô đầu miễn phí) · bếp lửa mạnh nấu nhanh hơn
-G.PLOT_FREE=10;G.PLOT_COST0=200;G.PLOT_COST_MUL=1.35;G.PLOT_COST_MAX=200000;G.KIT_COST=[150,350,700];G.KIT_SPEED=[1,1.25,1.5,2];
+G.PLOT_FREE=10;G.PLOT_COST0=200;G.PLOT_COST_MUL=1.35;G.PLOT_COST_MAX=200000;G.KIT_COST=[150,350,700,1600,3500,8000];G.KIT_SPEED=[1,1.25,1.5,2,2.4,2.8,3.2];G.KIT_MAX=6;
 G.plotCost=()=>G.S.plotsOpen<G.CFG.plots?Math.min(G.PLOT_COST_MAX,Math.round(G.PLOT_COST0*Math.pow(G.PLOT_COST_MUL,Math.max(0,G.S.plotsOpen-G.PLOT_FREE)))):null;
 G.shortNum=n=>n>=1000?(n>=10000?Math.round(n/1000):Math.round(n/100)/10)+'k':String(n); // số gọn để vừa ô đất (1500 → 1.5k, 200000 → 200k)
-G.kitCost=()=>G.S.kit<3?G.KIT_COST[G.S.kit]:null;
-G.kitSpeed=()=>G.KIT_SPEED[G.S.kit]||1;
+G.kitCost=()=>G.S.kit<G.KIT_MAX?G.KIT_COST[G.S.kit]:null;
+G.kitSpeed=()=>G.KIT_SPEED[Math.min(G.S.kit,G.KIT_MAX)]||1;
+G.kitDouble=()=>Math.min(G.S.kit,G.KIT_MAX)*.05; // cơ hội một mẻ ra 2 phần: +5% mỗi cấp bếp
 G.buyPlot=()=>{const c=G.plotCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.spend(c,'plot');G.S.plotsOpen++;G.msg('Đã mở thêm 1 ô đất!')};
 G.buyKit=()=>{const c=G.kitCost();if(c==null)return;if(G.S.money<c)return G.msg('Không đủ tiền');G.spend(c,'kit');G.S.kit++;G.msg('Bếp lên cấp '+G.S.kit+' — nấu nhanh hơn!')};
 G.updateFarm=dt=>{
@@ -241,10 +248,19 @@ G.msgText='';G.msg=t=>{G.msgText=t;clearTimeout(G._m);G._m=setTimeout(()=>G.msgT
 
 // NẤU ĂN + KHÁCH HÀNG
 G.canCook=r=>Object.entries(G.RECIPES[r].need).every(([k,n])=>G.has(k,n));
-G.cook=r=>{if(!G.canCook(r))return G.msg('Thiếu nguyên liệu');if(G.S.cooking.length>=3)return G.msg('Bếp đang bận (tối đa 3 mẻ)');
+G.POTS=3; // số chõ nấu song song
+G.cook=r=>{if(!G.canCook(r))return G.msg('Thiếu nguyên liệu');if(G.S.cooking.length>=G.POTS)return G.msg('Cả '+G.POTS+' chõ đang bận — thu món đã chín trước nhé');
   for(const[k,n]of Object.entries(G.RECIPES[r].need))G.add(k,-n);G.S.cooking.push({r,t:0})};
-G.updateKitchen=dt=>{const S=G.S,q=S.cooking[0];
-  if(q){q.t+=dt*G.kitSpeed();if(q.t>=G.RECIPES[q.r].time){G.add(q.r);G.potDone={t:performance.now(),r:q.r};S.cooking.shift()}}
+// Sao theo thời gian món chín nằm chờ trong chõ: ≤20 giây 3★ · ≤60 giây 2★ · lâu hơn 1★ (không bao giờ hỏng)
+G.quality=w=>w<=20?3:w<=60?2:1;
+G.readyPots=()=>G.S.cooking.filter(q=>q.done).length;
+G.collectPot=i=>{const q=G.S.cooking[i];if(!q||!q.done)return null;const s=G.quality(q.w||0),n=Math.random()<G.kitDouble()?2:1;
+  G.add(G.dishId(q.r,s),n);G.S.cooking.splice(i,1);G.S.stat.cooked=(G.S.stat.cooked||0)+n;return{r:q.r,s,n}};
+G.collectAll=()=>{const out=[];for(let i=G.S.cooking.length-1;i>=0;i--){const r=G.collectPot(i);if(r)out.push(r)}out.reverse();
+  if(out.length)G.msg('Thu '+out.map(o=>(o.n>1?o.n+'× ':'')+G.RECIPES[o.r].n+' '+'★'.repeat(o.s)).join(', '));return out};
+G.updateKitchen=dt=>{const S=G.S;
+  S.cooking.forEach(q=>{if(q.done)q.w=(q.w||0)+dt;else{q.t+=dt*G.kitSpeed();if(q.t>=G.RECIPES[q.r].time){q.done=true;q.w=0;G.potDone={t:performance.now(),r:q.r}}}});
+  G.updateOrders&&G.updateOrders(dt);
   G.updateCustomers&&G.updateCustomers(dt);
   G.updateStall&&G.updateStall(dt);
   G.updateProgress&&G.updateProgress(dt);
@@ -300,7 +316,7 @@ G.draw=t=>{G.hot=[];G.txq.length=0;G._tx=0;G._ty=0;G.updateCam();const zn=G.ui.z
 // NHÂN VẬT: chạm đâu đi đó, hoạt ảnh làm việc (cuốc đất, cho ăn, khuấy nồi, bưng món), hạt bụi, chữ bay
 G.P={x:192,y:170,tx:192,ty:170,dir:'d',st:'idle',wt:0,wd:.7,wa:'dig',task:null,lt:0};
 G.fx=[];G.fl=[];G.mk=null;
-const BND={farm:[10,20,500,280],market:[8,20,410,220],kitchen:[10,20,390,210],shop:[10,20,374,186],hub:[12,24,620,340],pets:[10,20,390,210]};
+const BND={farm:[10,20,690,318],market:[8,20,410,220],kitchen:[10,20,390,210],shop:[10,20,374,186],hub:[12,24,620,340],pets:[10,20,390,210]};
 const START={farm:[300,62],market:[200,160],kitchen:[200,180],shop:[192,142],hub:[300,190],pets:[200,160]};
 G.P.enter=z=>{const s=START[z]||[W/2,H/2];Object.assign(G.P,{x:s[0],y:s[1],tx:s[0],ty:s[1],st:'idle',task:null,dir:'d'});G.updateCam()};
 // Đi bộ tới POI rồi chuyển khu (không tele ngay)
@@ -466,6 +482,8 @@ G.fxDraw=t=>{const dt=Math.min((t-(G._ft||t))/1000,.1);G._ft=t;
 
 // 4 KHU: Nông trại · Chợ · Bếp · Quán. Mỗi khu = {bg: nền vẽ 1 lần, draw: phần động + vùng chạm}
 const rr=(b,x,y,w,h,c)=>{b.fillStyle=c;b.fillRect(x,y,w,h)};
+// Chỗ trống: Rs = danh sách khung [x,y,w,h] đã có công trình; true nếu khung mới (cách pad px) không đè khung nào. Dùng để đặt cây/bụi/hoa không đè nhà, đường
+const roomFor=(Rs,x,y,w,h,pad=2)=>Rs.every(([a,b,c,d])=>x+w+pad<=a||x-pad>=a+c||y+h+pad<=b||y-pad>=b+d);
 const mkBg=(fn,ww=W,hh=H)=>{const c=document.createElement('canvas');c.width=ww;c.height=hh;fn(c.getContext('2d'));return c};
 const grass=(b,y0=0)=>{const cw=b.canvas.width,ch=b.canvas.height,N_=['#7ec85e','#72bc52','#7ac45a','#76c056'],D_=['#6cb04c','#62a644','#68ac48','#5f9f42'],L_=['#8ed06a','#86cc64','#92d46e','#8acf68'];
  // nền: 4 tông theo khối 3px; rồi phủ các vạt cỏ sáng / tối hình elip (bán kính 10–30px) cho đỡ phẳng
@@ -485,10 +503,27 @@ const grass=(b,y0=0)=>{const cw=b.canvas.width,ch=b.canvas.height,N_=['#7ec85e',
  // cụm hoa dại (3–5 bông, cánh + nhuỵ + cuống)
  for(let i=0;i<area/3200;i++){const cx0=hs(i,5)%cw,cy0=y0+4+hs(i,6)%(ch-y0-4),col=['#fff','#f2d04a','#f1a0b0','#c8b0f0'][i%4];
   for(let k=0;k<3+i%3;k++){const x=cx0+(hs(i,20+k)%11)-5,y=cy0+(hs(i,30+k)%7)-3;rr(b,x,y+2,1,2,'#4a9a3c');rr(b,x-1,y,3,1,col);rr(b,x,y-1,1,3,col);rr(b,x,y,1,1,k%2?'#f2a82a':'#fff2a8')}}};
-const river=(b,y)=>{const cw=b.canvas.width,ch=b.canvas.height;rr(b,0,y,cw,ch-y,'#2a1a10');rr(b,0,y+2,cw,ch-y-2,'#3f8fc4');rr(b,0,y+2,cw,3,'#6cb6dd')};
+const river=(b,y)=>{const cw=b.canvas.width,ch=b.canvas.height;
+ // bờ sông: đất ướt, sỏi, cỏ rủ
+ rr(b,0,y-1,cw,5,'#8a6a42');for(let x=0;x<cw;x+=2)rr(b,x,y-1+hs(x,91)%2,2,2,hs(x,92)%3?'#8a6a42':'#a8855a');rr(b,0,y+3,cw,1,'#6a4a2a');
+ for(let x=0;x<cw;x+=3){const n=hs(x,93)%4;rr(b,x,y-3,1,2+n%2,'#4a8a38');if(n===0)rr(b,x+1,y-2,1,2,'#5aab4c')}
+ for(let i=0;i<cw/22;i++){const x=hs(i,94)%cw;rr(b,x,y,2,1,'#b4b8ac');rr(b,x,y+1,2,1,'#7a7e74')}
+ // nước: 5 dải nông → sâu, chuyển dải bằng rây điểm ảnh
+ const C=['#78c0e4','#5aaee0','#4a9ad0','#3f90c8','#3584b8'],H=[5,8,12,16,9999];let y0=y+4;
+ C.forEach((c,k)=>{const y1=Math.min(ch,y0+H[k]);rr(b,0,y0,cw,y1-y0,c);if(y1<ch&&k<C.length-1)for(let q=0;q<cw;q+=2)rr(b,q+(k&1),y1-1,1,1,C[k+1]);y0=y1});
+ for(let i=0;i<cw*(ch-y)/90;i++)rr(b,hs(i,95)%cw,y+6+hs(i,96)%Math.max(1,ch-y-8),2+hs(i,97)%5,1,i%3?'#3b88c0':'#8ccaec');
+ for(let x=0;x<cw;x+=2)if(hs(x,98)%5)rr(b,x,y+4,2,1,'#e8f6fc');
+ // lau sậy sát bờ, đá giữa dòng, lá sen rải rác
+ for(let x=14;x<cw;x+=46+hs(x,99)%30)A.reeds(b,x,y+2,3+hs(x,100)%3,x);
+ for(let i=0;i<cw/120;i++)A.rockW(b,20+hs(i,101)%Math.max(1,cw-40),y+14+hs(i,102)%8,3+hs(i,103)%2);
+ for(let i=0;i<cw/90;i++)A.pad(b,hs(i,104)%cw,y+9+hs(i,105)%10,3+hs(i,106)%2)};
 const awn=(b,x,y,w,c1,c2)=>{for(let i=0;i*14<w;i++){const c=i%2?c2:c1;rr(b,x+i*14,y,14,14,c);rr(b,x+i*14+2,y+14,10,3,c)}rr(b,x,y-2,w,2,'#2a1a10')};
 const planks=(b,x,y,w,h,c,l)=>{rr(b,x,y,w,h,'#2a1a10');rr(b,x+2,y+2,w-4,h-4,c);for(let i=x+8;i<x+w-2;i+=8)rr(b,i,y+2,1,h-4,l)};
-const rip=(t,y,ww=W)=>{for(let i=0;i<14;i++)R((t/45+i*53)%ww,y+(i%3)*5,9,1,'#b4e1f4')};
+// sóng nước động: vệt sáng trôi với 3 tốc độ, điểm lấp lánh nhấp nháy, bọt sát bờ trôi chậm (y = mép trên mặt sông + 2)
+const rip=(t,y,ww=W)=>{
+ for(let i=0;i<16;i++){const x=(t/(38+(i%3)*16)+i*47)%(ww+20)-10,yy=y+(i%5)*4+Math.round(Math.sin(t/420+i));R(x,yy,5+(i%4)*3,1,i%4===0?'#e8f6fc':'#bfe6f6')}
+ for(let i=0;i<12;i++){const ph=(t/240+i*1.9)%7;if(ph<.7){const x=hs(i,5)%ww,yy=y+2+hs(i,6)%26;R(x,yy,1,1,'#fff');R(x-1,yy,3,1,'#e8f6fc')}}
+ for(let x=-10;x<ww;x+=18)R(x+Math.round(Math.sin(t/700+x*.3)*2)+((t/90)%18),y-2,8,1,'#f4fbff')};
 function palm(x,y,t){
  for(let i=0;i<28;i++){const sx=Math.round(Math.sin(i/9)*4);R(x+sx-3,y-i,6,1,'#2a1a10');R(x+sx-2,y-i,4,1,i%4?'#b07a3a':'#8b5a2b');R(x+sx+1,y-i,1,1,'#6b4423')}
  const tx=x+Math.round(Math.sin(27/9)*4),ty=y-28,sw=Math.sin(t/900)*2;

@@ -47,13 +47,67 @@ const A={
  basket:(b,x,y,f)=>{blk(b,x,y+4,16,10,'#c49a50');for(let i=0;i<4;i++)rr(b,x+2+i*4,y+7,2,1,'#8a6428');if(f){orb(b,x+4,y+3,3,f);orb(b,x+9,y+2,3,tn(f,.1));orb(b,x+13,y+4,2,f)}},
  pot:(b,x,y,c='#c8643a')=>{orb(b,x+4,y+3,4,'#4a9a3c');orb(b,x+10,y+2,4,'#5fb04a');rr(b,x+7,y-2,2,2,'#f1a0b0');blk(b,x+1,y+8,12,8,c);blk(b,x,y+6,14,3,tn(c,.1))},
  bush:(b,x,y,c='#4a9a3c')=>{orb(b,x+6,y+7,6,c);orb(b,x+14,y+8,5,tn(c,.08));orb(b,x+10,y+4,5,tn(c,.14));[[5,4],[12,2],[16,7],[8,9]].forEach(([i,j])=>rr(b,x+i,y+j,2,2,'#f6b0c0'))},
- tree:(b,x,y,c='#3f9a4a')=>{blk(b,x+6,y+14,6,18,'#7a4a24');orb(b,x+9,y+8,9,c);orb(b,x+2,y+13,6,tn(c,.08));orb(b,x+16,y+13,6,tn(c,.05));orb(b,x+9,y+3,6,tn(c,.18));[[5,8],[14,5],[12,14]].forEach(([i,j])=>rr(b,x+i,y+j,2,2,'#e8483a'))},
+ tree:(b,x,y,c='#3f9a4a',s=1)=>{const f=v=>Math.round(v*s);blk(b,x+f(6),y+f(14),f(6),f(18),'#7a4a24');rr(b,x+f(6)+1,y+f(14)+1,1,f(18)-2,'#9a6a3a');
+  orb(b,x+f(9),y+f(8),f(9),c);orb(b,x+f(2),y+f(13),f(6),tn(c,.08));orb(b,x+f(16),y+f(13),f(6),tn(c,.05));orb(b,x+f(9),y+f(3),f(6),tn(c,.18));
+  [[5,8],[14,5],[12,14],[8,16],[18,10],[3,12]].slice(0,s>1.2?6:3).forEach(([i,j])=>rr(b,x+f(i),y+f(j),2,2,'#e8483a'))},
  flower:(b,x,y,c)=>{rr(b,x+1,y+3,1,4,'#3f7a32');rr(b,x,y,3,3,c);rr(b,x+1,y+1,1,1,'#f2d04a')},
  stone:(b,x,y,w=10)=>blk(b,x,y,w,Math.max(4,w*.6|0),'#a8a8a0'),
  lily:(b,x,y,f)=>{ell(b,x+4,y+2,5,2,'#4a9a3c');rr(b,x+4,y,1,2,'#3a7a32');if(f){rr(b,x+2,y-2,4,3,'#f6b0c0');rr(b,x+3,y-3,2,2,'#fff0f4');rr(b,x+3,y-1,2,1,'#f2d04a')}},
  fence:(b,x,y,n,c='#c4a06a')=>{rr(b,x,y+3,n*8-3,2,'#8b5a2b');rr(b,x,y+8,n*8-3,2,'#8b5a2b');for(let i=0;i<n;i++)blk(b,x+i*8,y,5,13,c)},
  lamp:(b,x,y)=>{blk(b,x+3,y+12,4,26,'#5a3a20');blk(b,x,y,10,13,'#f2c23a');rr(b,x+2,y+3,6,6,'#fff3b0');blk(b,x-1,y-3,12,4,'#8b5a2b')},
  sign:(b,x,y)=>{blk(b,x+4,y+4,4,22,'#6b4423');blk(b,x-4,y,20,8,'#c4a06a');rr(b,x-2,y+3,14,1,'#8b5a2b');blk(b,x+6,y+10,16,7,'#d8b56a')},
+ // ---- BỘ DỰNG CẢNH NƯỚC: lau sậy, đá, lá sen, hoa sen, ao, mương, giếng + thuyền / cá chép / vòng sóng (vẽ động) ----
+ // lau sậy: thân mảnh, lá, bông nâu hình điếu (cách một cây có bông)
+ reeds:(b,x,y,n=4,seed=1)=>{for(let k=0;k<n;k++){const h=8+hs(x+k,seed)%7,sx=x+k*2-n;rr(b,sx,y-h,1,h,k%2?'#5a8a3a':'#6aa046');rr(b,sx+(k%2?-1:1),y-(h>>1),1,3,'#6aa046');
+   if(k%2===0){rr(b,sx-1,y-h-3,3,4,'#7a4a24');rr(b,sx,y-h-4,1,1,'#5a3418');rr(b,sx-1,y-h-3,1,2,'#9a6a3a')}else rr(b,sx,y-h-2,1,2,'#8ab85a')}},
+ // đá nhô khỏi mặt nước, có bọt trắng quanh chân
+ rockW:(b,x,y,r)=>{const ry=Math.max(2,(r*.7)|0);ell(b,x,y+2,r+2,2,'#e8f6fc');ell(b,x,y,r+1,ry+1,OL);ell(b,x,y,r,ry,'#8f8f96');ell(b,x-1,y-1,Math.max(1,r-2),Math.max(1,ry-1),'#b0b0b8');rr(b,x-r+1,y-1,2,1,'#d8d8de')},
+ // lá sen to: bóng đổ, mặt lá, vùng sáng, gân lá
+ pad:(b,x,y,r,c='#3f9a4a')=>{const ry=Math.max(2,(r*.5)|0);ell(b,x,y+1,r,ry,tn(c,-.3));ell(b,x,y,r,ry,c);ell(b,x-1,y-1,Math.max(1,r-3),Math.max(1,ry-1),tn(c,.18));rr(b,x,y,r,1,tn(c,-.35));rr(b,x-r+1,y-1,r-1,1,tn(c,-.2))},
+ // hoa sen: 3 lớp cánh, nhuỵ vàng, cuống
+ lotus:(b,x,y,c='#f6b0c0')=>{rr(b,x,y,1,5,'#3a7a32');ell(b,x-3,y-3,2,3,tn(c,-.14));ell(b,x+3,y-3,2,3,tn(c,-.14));ell(b,x,y-5,2,4,c);ell(b,x-2,y-2,2,2,tn(c,.2));ell(b,x+2,y-2,2,2,tn(c,.2));
+  rr(b,x-1,y-3,2,2,'#f2d04a');rr(b,x,y-8,1,1,tn(c,.5));rr(b,x-1,y-6,1,2,tn(c,.4))},
+ // ao: bờ không tròn đều (đất ướt, đá, lau sậy), nước 4 tông từ lòng ao ra mép, bọt mép, lá và hoa sen
+ pond:(b,cx0,cy0,rx,ry,seed=1)=>{const Rr=a=>1+.1*Math.sin(a*3+seed)+.07*Math.sin(a*5+seed*2.3);
+  for(let y=cy0-ry-8;y<=cy0+ry+8;y++)for(let x=cx0-rx-10;x<=cx0+rx+10;x++){const dx=(x+.5-cx0)/rx,dy=(y+.5-cy0)/ry,r=Rr(Math.atan2(dy,dx)),d=(dx*dx+dy*dy)/(r*r);
+   if(d>1.4)continue;
+   if(d>1){rr(b,x,y,1,1,d<1.08?'#6a4a2a':['#8a6a42','#9a7a4e','#7a5a38'][hs(x,y)%3]);continue}
+   let c=d<.3?'#3b88c0':d<.6?'#4a9ad0':d<.85?'#5aaee0':'#78c0e4';
+   if(d>.9&&hs(x,y)%2)c='#e8f6fc';else if(dy<-.5&&hs(x,y)%3===0)c='#8ccaec';else if(hs(x,y)%23===0)c='#a8dcf2';
+   rr(b,x,y,1,1,c)}
+  const pos=(i,s,lo,hi)=>{const a=hs(i,seed+s)%628/100,t=lo+(hs(i,seed+s+1)%100)/100*(hi-lo);return[Math.round(cx0+Math.cos(a)*rx*t),Math.round(cy0+Math.sin(a)*ry*t*.9)]};
+  for(let i=0;i<7;i++){const[x,y]=pos(i,10,.15,.7);A.pad(b,x,y,4+hs(i,seed)%3,i%2?'#3f9a4a':'#4aa84a')}
+  for(let i=0;i<4;i++){const[x,y]=pos(i,40,.1,.55);A.lotus(b,x,y,['#f6b0c0','#fff0f4','#f08aa8','#fff0f4'][i])}
+  [-2.4,-.7,2.3].forEach((a,i)=>A.reeds(b,Math.round(cx0+Math.cos(a)*rx*1.3),Math.round(cy0+Math.sin(a)*ry*1.3),4,seed+i));
+  for(let i=0;i<13;i++){const a=i/13*6.283,r=Rr(a)*1.2;A.stone(b,Math.round(cx0+Math.cos(a)*rx*r)-3,Math.round(cy0+Math.sin(a)*ry*r)-2,6+hs(i,seed)%3)}},
+ // mặt nước hình chữ nhật (mương): 4 dải nước, vệt sáng, bọt mép, bờ đất + đá hai bên
+ waterRect:(b,x,y,w,h)=>{const C=['#78c0e4','#5aaee0','#4a9ad0','#3f90c8'],n=C.length,bh=h/n;
+  for(let k=0;k<n;k++){const y0=y+Math.round(k*bh),y1=y+Math.round((k+1)*bh);rr(b,x,y0,w,y1-y0,C[k]);if(k<n-1)for(let q=x+(k&1);q<x+w;q+=2)rr(b,q,y1-1,1,1,C[k+1])}
+  for(let i=0;i<w*h/60;i++)rr(b,x+hs(i,81)%Math.max(1,w-3),y+3+hs(i,82)%Math.max(1,h-5),3,1,i%3?'#8ccaec':'#3b88c0');
+  rr(b,x,y,w,1,'#e8f6fc');rr(b,x-2,y-5,w+4,5,'#8a6a42');rr(b,x-2,y-5,w+4,1,'#a8855a');rr(b,x-2,y+h,w+4,4,'#8a6a42');rr(b,x-2,y+h+3,w+4,1,'#6a4a2a');
+  for(let q=x-2;q<x+w+2;q+=6){A.stone(b,q+1,y-4,5);A.stone(b,q+2,y+h,5)}},
+ // giếng làng: thành đá xây có rêu, hai trụ gỗ + xà, mái rơm nhỏ, tời quay, dây gàu, vũng nước
+ well:(b,x,y)=>{ell(b,x,y,16,3,'#5a9a44');ell(b,x+11,y+1,7,2,'#5a8ab8');rr(b,x+7,y,6,1,'#a8d0e8');
+  blk(b,x-14,y-9,28,10,'#9a9aa2');for(let r=0;r<3;r++){const y0=y-9+r*3;rr(b,x-14,y0+2,28,1,'#7a7a82');for(let q=x-14+((r%2)*3);q<x+14;q+=7)rr(b,q,y0,1,3,'#6a6a72')}
+  rr(b,x-14,y-9,28,1,'#c4c4cc');[[x-10,y-4],[x-3,y-2],[x+6,y-5],[x+11,y-3]].forEach(([a,c])=>{rr(b,a,c,2,1,'#5a8a3a');rr(b,a+1,c-1,1,1,'#7aaa4a')});
+  ell(b,x,y-10,12,4,'#8a8a92');ell(b,x,y-10,10,3,'#2a5a80');ell(b,x,y-10,9,2,'#3f8fc4');rr(b,x-4,y-11,4,1,'#8ccaec');
+  blk(b,x-12,y-30,3,23,'#6b4423');blk(b,x+9,y-30,3,23,'#6b4423');rr(b,x-11,y-28,1,19,'#8b5a2b');rr(b,x+10,y-28,1,19,'#8b5a2b');
+  blk(b,x-14,y-31,29,3,'#8b5a2b');rr(b,x-13,y-30,27,1,'#a8733a');A.thatch(b,x-18,y-41,37,10,'#d8b050');
+  rr(b,x+4,y-26,8,1,'#5a3a20');blk(b,x+11,y-27,2,6,'#5a3a20');rr(b,x,y-29,1,13,'#c8a060');blk(b,x-3,y-17,7,5,'#8b5a2b');rr(b,x-3,y-17,7,1,'#c89a5a');rr(b,x-2,y-16,5,1,'#3f8fc4');rr(b,x-3,y-14,7,1,'#6b4423')},
+ // thuyền nan có mui tre, bập bềnh theo sóng, vệt nước sau lái, đèn lồng ở mũi (vẽ động: b = cx)
+ sampan:(b,x,y,t)=>{x=Math.round(x);y+=Math.round(Math.sin(t/520+x/50));
+  for(let i=0;i<3;i++)rr(b,x-8-i*7,y+9+(i%2),5,1,'#e8f6fc');
+  blk(b,x,y+3,44,6,'#8a5a30');rr(b,x-3,y+1,5,4,'#8a5a30');rr(b,x+42,y,5,5,'#8a5a30');rr(b,x+1,y+4,42,1,'#a8733a');
+  for(let q=x+6;q<x+42;q+=8)rr(b,q,y+4,1,5,'#6b4423');rr(b,x+2,y+8,40,1,'#5a3a20');
+  ell(b,x+19,y+1,13,5,OL);ell(b,x+19,y+1,12,4,'#d8b050');for(let q=x+9;q<x+30;q+=3)rr(b,q,y-3,1,8,'#b88a28');rr(b,x+11,y-2,6,1,'#f0d078');
+  for(let i=0;i<8;i++)rr(b,x+2-i,y+5+i,1,1,'#6b4423');
+  rr(b,x+45,y-12,1,12,'#6b4423');A.lantern(b,x+42,y-6,'#f2a82a')},
+ // cá chép bơi (dir: 1 sang phải, -1 sang trái), đuôi vẫy theo t
+ koi:(b,x,y,dir,t,c='#f08a3a')=>{x=Math.round(x);y=Math.round(y);const w=Math.round(Math.sin(t/110));
+  rr(b,x-3,y-1,7,3,c);rr(b,x-2,y-2,5,1,tn(c,.2));rr(b,x-3,y+1,7,1,tn(c,-.2));rr(b,x+(dir>0?-1:-2),y-1,2,2,'#fff6e4');
+  const tx=dir>0?x-5:x+5;rr(b,tx,y-1+w,2,3,tn(c,-.1));rr(b,tx-(dir>0?1:-1),y-2+w,1,5,tn(c,-.25));rr(b,dir>0?x+3:x-3,y-1,1,1,OL)},
+ // vòng sóng loang ra từ một điểm (vẽ động)
+ ring:(b,x,y,r)=>{x=Math.round(x);y=Math.round(y);const c='#d4f0fa';rr(b,x-r,y,1,1,c);rr(b,x+r,y,1,1,c);rr(b,x-(r>>1),y-((r*.45)|0),r,1,c);rr(b,x-(r>>1),y+((r*.45)|0),r,1,c)},
  // ---- BỘ DỰNG NHÀ: mái rơm / mái ngói, vách ván, cửa sổ, cửa gỗ, đồ treo. A.hut và các cổng ở core.js (poi*) đều dùng bộ này ----
  // mái rơm hình thang: thớ rơm dọc, 3 dải đậm nhạt, mép dưới tua tủa, gờ nóc có hai cọc chéo
  thatch:(b,x,y,w,h,c)=>{const ins=w*.24,ext=j=>{const f=1-j/(h-1),d=(ins*f)|0;return[x+d,x+w-d]};

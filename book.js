@@ -4,7 +4,7 @@
 // Mọi thay đổi tiền trong game đều đi qua G.earn / G.spend (cat = loại khoản, xem G.BOOK_CAT) để sổ ghi lại.
 // S.book = {days:{[ngày game]:{inc:{loại:xu}, exp:{…}}}, tot:{inc:{…}, exp:{…}}}; theo ngày chỉ giữ 14 ngày gần nhất.
 G.BOOK_CAT={
-  inc:{stall:'Bán món ở xe đẩy',shop:'Bán món ở nhà hàng',crop:'Bán nông sản',animal:'Bán sản phẩm vật nuôi',ing:'Bán nguyên liệu',reward:'Thưởng nhiệm vụ'},
+  inc:{stall:'Bán món ở xe đẩy',shop:'Bán món ở nhà hàng',crop:'Bán nông sản',animal:'Bán sản phẩm vật nuôi',ing:'Bán nguyên liệu',reward:'Thưởng nhiệm vụ',order:'Giao đơn đặt hàng'},
   exp:{seed:'Mua hạt giống',ing:'Mua nguyên liệu',plot:'Mở ô đất',animal:'Mua vật nuôi',kit:'Nâng cấp bếp',build:'Sửa xe đẩy'}};
 const KEEP=14;
 const state=()=>G.S.book||(G.S.book={days:{},tot:{inc:{},exp:{}}});

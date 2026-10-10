@@ -11,6 +11,7 @@ js/
   ui.js             # Giao diện túi đồ, thanh ô nhanh, vòng lặp
   art.js            # Bộ vẽ chibi pixel dùng chung (khối, cây, nhà, sprite lớn của cây/vật nuôi)
   plants.js         # Hình cây trên ruộng: mỗi loại 5 giai đoạn (hạt · mầm · nhỏ · lớn · chín)
+  orders.js         # Bảng đơn đặt hàng của dân làng (đơn, thưởng, hạn)
   music.js          # Nhạc nền lofi chill tạo bằng Web Audio
   menu.js           # Màn hình mở game (Chơi tiếp / Chơi lại / Cài đặt) + nút và bảng cài đặt
   icons.js          # Icon vật phẩm / nguyên liệu / hạt / món ăn / vật nuôi / xu, vẽ bằng code 16×16
@@ -44,7 +45,7 @@ Các zone ghi vào `G.zones` / `Z` và dùng chung `G.travelTo`, `G.drawPOI`.
 
 - **Mở rộng ruộng từng ô một**: bắt đầu 10 ô (cả hàng trên cùng), mở lần lượt từ hàng trên xuống dưới, trong mỗi hàng từ phải sang trái (`G.plotOrder`, `G.plotOpen`, số ô đang mở `S.plotsOpen`). Ruộng chỉ vẽ đúng 1 ô khoá kế tiếp, chạm vào ô đó là mua thẳng (`G.buyPlot`, giá ô mua đầu tiên `G.PLOT_COST0` = 200 xu, mỗi ô sau nhân `G.PLOT_COST_MUL` = 1.35, trần `G.PLOT_COST_MAX` = 200000 xu/ô, 10 ô đầu `G.PLOT_FREE` miễn phí; nhãn giá trên ô khoá rút gọn bằng `G.shortNum`, ví dụ 1500 → 1.5k). Bảng *Nâng cấp* (mở từ giá dụng cụ trong bếp) cũng có nút mua ô; giá bếp ở `G.KIT_COST`, tốc độ `G.KIT_SPEED` trong `core.js`. Save cũ mở theo hàng (`rows`) được quy ra số ô và giữ nguyên các ô đã mở; khu ruộng xuất hiện gần hàng ô đầu tiên (`START.farm`).
 - **Thời gian lớn của cây** (`time` trong `G.CROPS`, tính bằng giây chơi game, không chạy khi tắt game): rau 36–45s, củ/hạt 60–130s, chuối 270s, dừa 360s. Lãi mỗi giây của một ô đất khoảng 0.17 (rau) → 0.12–0.13 (củ, hạt) → 0.10–0.11 (cây thân gỗ), nên không cây nào vượt trội; cây thân gỗ bù lại bằng sản lượng mỗi lần thu cao. Thêm cây mới thì cân theo mức này.
-- **Bếp lửa mạnh** (cấp 0–3): nấu nhanh ×1 → ×2 (`G.updateKitchen`).
+- **Bếp lửa mạnh** (cấp 0–6, xem mục Bếp bên dưới): nấu nhanh ×1 → ×2 (`G.updateKitchen`).
 - **Uy tín quán** (1–5 sao, `G.stars`, `G.addRep` trong `restaurant.js`): khách vui +2/+3, khách bực bỏ về −5; nhiều sao → khách đến nhanh hơn, 4–5 sao có tiền thưởng.
 - **Tiện ích**: nút *Thu hoạch hết* (ở trang trại khi có đồ chín) và *Nấu lại* (trong bảng bếp).
 
@@ -118,6 +119,27 @@ Các zone ghi vào `G.zones` / `Z` và dùng chung `G.travelTo`, `G.drawPOI`.
 - **Cài đặt** (`js/menu.js`): nút bánh răng dưới nút loa. Bảng có nhạc nền, hiệu ứng, Màn hình chính, Chơi lại (có hỏi xác nhận), Đóng.
 - **Màn hình mở game**: Chơi tiếp (khoá nếu chưa có ván, hiện "Ngày · xu" nếu có), Chơi lại (hỏi xác nhận nếu đang có ván), Cài đặt. Game tạm dừng (`G.paused`) khi màn này mở. **Chơi lại** xoá save rồi tải lại trang, nên mọi thứ bắt đầu sạch và bỏ qua màn mở game một lần.
 - **Sửa lỗi mở hết ô đất**: trước đây save thiếu hoặc hỏng trường `plotsOpen` bị coi là save cũ và mở hết 60 ô. Giờ save như vậy về 10 ô đầu; save kiểu cũ có `rows` vẫn quy đổi theo hàng. Số ô luôn được kẹp trong 10…60.
+
+## Cảnh nước (sông, ao sen, mương, giếng, thuyền)
+
+- **Sông** (`river(b,y)` trong `core.js`, dùng ở ruộng, làng, chợ, khu thú cưng): bờ đất ướt có sỏi và cỏ rủ, nước 5 dải nông → sâu chuyển bằng rây điểm ảnh, vệt sáng tối, bọt sát bờ, lau sậy, đá có bọt quanh chân, lá sen rải rác. **Sóng động** `rip(t,y,ww)`: vệt sáng trôi với 3 tốc độ, điểm lấp lánh nhấp nháy, bọt bờ trôi chậm. Tham số `y` của `rip` = mép trên mặt sông + 2.
+- **Bộ dựng nước** (`js/art.js`): `A.pond` (ao bờ không tròn đều: đất ướt, đá, lau sậy, nước 4 tông, bọt mép, lá và hoa sen), `A.waterRect` (mương bờ đất + đá), `A.well` (giếng: thành đá có rêu, trụ gỗ, mái rơm, tời, dây gàu), `A.reeds`, `A.rockW`, `A.pad` (lá sen), `A.lotus` (hoa sen). Vẽ động (truyền `cx`): `A.sampan` (thuyền mui tre bập bềnh, đèn lồng, vệt nước), `A.koi` (cá chép bơi, đuôi vẫy), `A.ring` (vòng sóng loang).
+- Làng (`zones/hub.js`): ao sen có 2 con cá chép bơi vòng quanh và 3 vòng sóng loang quanh lá sen, mương có cầu gỗ + hoa sen + lau, thuyền chạy ngang sông. Ruộng (`zones/farm.js`): giếng mới.
+
+## Bố cục và tỉ lệ (làng, ruộng)
+
+- **Kiểm tra chỗ trống**: `roomFor(danhSáchKhung,x,y,w,h,pad)` (core.js) trả `true` nếu khung mới không đè khung nào. Mỗi khu có danh sách `K` gồm khung của công trình, đường, nước; cây, bụi, hoa chỉ được đặt vào chỗ trống (xem `zones/hub.js`, `zones/farm.js`). Thêm công trình mới thì thêm khung của nó vào `K` trước khi rải cây.
+- **Tỉ lệ cây**: `A.tree(b,x,y,màu,s)` có tham số `s` (mặc định 1). Cây nền dùng `s` 1.3–1.5 (cao khoảng 43–50px, hơn nhà lá khoảng 5px) để không còn nhỏ như bụi cạnh nhà.
+- **Làng**: quảng trường bắt đầu đúng mép dưới Chợ và Thú cưng (y=66), đường ngang nằm dưới đáy cổng Ruộng nhà và Xe đẩy (cổng vẽ ở y=162, điểm bước tới giữ y=184), cụm mương + cầu + nhà lá dời sang phải 10px, trâu và chó không còn đè nhau.
+- **Ruộng**: bản đồ **700×400** (trước 520×300). Luống rau (10×6 ô, x 155–431, y 18–172) giữ nguyên chỗ; chuồng dời sang x 456–638 (rộng 186px, chỗ ở của vật nuôi rộng hơn), cách luống hơn 30px; nhà bếp giữ nguyên; hàng rào ở y=178, giếng ở (314,230), đường đất y 262–288, sông y=330, cổng "Về làng" ở (650,288). Giới hạn đi lại `BND.farm` = [10,20,690,318], kích cỡ camera ở `G.CFG.world.farm`.
+
+## Bếp: nấu theo sao, đơn đặt hàng, nâng cấp
+
+- **Nấu song song**: 3 chõ chạy cùng lúc (`G.POTS`). Món chín nằm trong chõ chờ bạn thu (chạm chõ, nút "Thu món chín" hoặc nút trong cửa sổ Bếp); không bao giờ bị hỏng.
+- **Sao theo độ nhanh tay** (`G.quality`): thu trong 20 giây sau khi chín được 3★, trong 60 giây được 2★, lâu hơn 1★. Trên mỗi chõ đã chín có thanh nhỏ cho biết còn bao lâu thì tụt sao. Món 2★/3★ là vật phẩm riêng `id_2`, `id_3` (1★ vẫn là `id` gốc nên save cũ chạy bình thường), giá bán lẻ ×1 / ×1.4 / ×1.9 (`G.STAR_MUL`). Hàm tiện ích: `G.dishId(id,sao)`, `G.dishStock(id,saoTốiThiểu)`, `G.starOf`, `G.baseOf`. Icon 2★/3★ tự sinh ở `icons.js` (món gốc + sao vàng).
+- **Bảng đơn đặt hàng** (`js/orders.js`, bảng trên tường trái bếp, huy hiệu: đỏ = số đơn đang có, xanh = số đơn giao được ngay): mở sau khi thu hoạch những cây đầu tiên (`S.quest>=2`). Tối đa 3 đơn cùng lúc, thời hạn 15 phút chơi, đơn mới cách nhau 2–3,5 phút. **Giới hạn theo ngày game** (`G.ORD.perDay` = 3; 1 ngày game = 120 giây chơi): mỗi ngày chỉ được đặt tối đa 3 đơn và giao tối đa 3 đơn, sang ngày mới thì đếm lại (`S.ord.dd`); giao xong không còn làm đơn mới đến sớm hơn. Mô phỏng người chơi lý tưởng 2 giờ: trung bình 0,74 đơn/ngày, nhiều nhất 1 đơn/ngày, khoảng 140 xu/phút tổng thưởng (chưa trừ vốn nguyên liệu). Món lấy từ các món đã mở khoá (kể cả 16 món xe đẩy không bán). Số lượng và yêu cầu sao tăng theo số khách đã phục vụ và số đơn đã giao. Thưởng = giá món × số lượng × (1.6 + 0.3 × (sao yêu cầu − 1)), khoảng 2.7 lần giá bán lẻ, có 40% kèm +2 uy tín và 40% kèm 3 hạt giống. Giao đơn lấy món sao thấp nhất đủ yêu cầu trước. Chỉnh độ khó ở `G.ORD` và hàm `make()`. Khoản thu ghi vào sổ thu chi với loại "Giao đơn đặt hàng".
+- **Nâng cấp bếp 6 cấp** (`G.KIT_COST`, `G.KIT_SPEED`, `G.KIT_MAX`): giá 150 / 350 / 700 / 1600 / 3500 / 8000 xu, tốc độ nấu ×1 → ×3.2, và mỗi cấp thêm 5% cơ hội một mẻ ra 2 phần (`G.kitDouble`).
+- Kệ lá chuối trong bếp giờ hiển thị tối đa 4 món đang có (trước đây xếp cả 20 món ra ngoài màn hình).
 
 ## Ghi chú kỹ thuật
 

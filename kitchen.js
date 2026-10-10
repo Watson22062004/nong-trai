@@ -62,14 +62,29 @@ Z.kitchen={bg:mkBg(b=>{
    blk(cx,x,y+18,30,14,'#8a929c');rr(cx,x+2,y+20,26,2,'#c0c8d0');
    blk(cx,x+2,y+8,26,11,'#d9a860');for(let k=0;k<5;k++)rr(cx,x+5+k*5,y+10,1,7,'#a87838');
    blk(cx,x+5,y+3,20,6,'#e8c878');rr(cx,x+13,y,4,3,'#8b5a2b');
-   if(q){const r=G.RECIPES[q.r],f=i?0:q.t/r.time;R(x,y-5,30,4,OL);R(x+1,y-4,28*f,2,'#4f9a45');BUB(x+3,y-30,q.r);
-    if(!i)for(let k=0;k<3;k++){const yy=(t/28+k*9)%16;R(x+8+k*6,y+1-yy,2,2,'#fff8')}}}
-  HOT(124,48,140,70,()=>{G.ui.modal='cook'},{sx:190,sy:130,anim:'stir',dur:.8});
+   if(q){const r=G.RECIPES[q.r],f=q.done?1:q.t/r.time,w=q.w||0,st=G.quality(w);
+    R(x,y-5,30,4,OL);R(x+1,y-4,28*f,2,q.done?'#f2c42a':'#4f9a45');BUB(x+3,y-30,q.r);
+    if(q.done){ // món đã chín: thanh nhỏ cho biết còn bao lâu thì tụt sao, kèm số sao hiện tại
+     const left=w<=20?1-w/20:w<=60?1-(w-20)/40:0;R(x,y-9,30,3,OL);R(x+1,y-8,28*left,1,st===3?'#f2c42a':st===2?'#bfe0f0':'#b8a890');TS('★'.repeat(st),x+15,y-33,'#ffd23a',9)}
+    else for(let k=0;k<3;k++){const yy=(t/28+k*9+i*5)%16;R(x+8+k*6,y+1-yy,2,2,'#fff8')}}}
+  // Bảng đơn trên tường trái: khung gỗ, nền bần, giấy ghim; chấm báo số đơn (xanh = có đơn giao được ngay)
+  const nOrd=(S.orders||[]).length,nOk=G.ordReady?G.ordReady():0;
+  blk(cx,6,42,50,58,'#8b5a2b');rr(cx,9,45,44,52,'#c89a5a');for(let i=0;i<26;i++)rr(cx,10+hs(i,1)%42,46+hs(i,2)%50,1,1,'#a8803e');
+  [['#fff6a8',12,49],['#bfe8f6',32,51],['#f6c8d4',13,69],['#d4f0c0',31,71],['#fff6a8',22,59]].slice(0,Math.min(5,nOrd)).forEach(([c,x,y])=>{rr(cx,x,y,15,13,c);rr(cx,x+2,y+4,10,1,'#8a6a40');rr(cx,x+2,y+7,7,1,'#8a6a40');rr(cx,x+2,y+10,9,1,'#8a6a40');rr(cx,x+6,y-1,2,2,'#d8402e')});
+  if(!nOrd)TS('Chưa có đơn',31,74,'#6b4423',7);
+  TS('Bảng đơn',31,38,'#fff6e4',8);
+  if(nOrd){orb(cx,52,46,6,nOk?'#4f9a45':'#d8402e');TS(nOk||nOrd,52,49,'#fff',8)}
+  HOT(6,40,50,62,()=>{G.ui.modal='orders';G.refreshUI&&G.refreshUI()},{sx:50,sy:130});
+  HOT(124,48,140,70,()=>{if(G.readyPots()){G.collectAll();G.refreshUI&&G.refreshUI()}else G.ui.modal='cook'},{sx:190,sy:130,anim:'stir',dur:.8});
   HOT(126,22,142,26,()=>{G.ui.modal='upgrade';G.refreshUI()},{sx:190,sy:130}); // giá treo dụng cụ → Nâng cấp
   if(G.kitCost()!=null)IM('coin',258,20+Math.sin(t/300)*1.5,12);
   // lá chuối để món chín
   blk(cx,248,166,124,32,'#3f7a32');for(let k=0;k<7;k++)rr(cx,256+k*16,170,1,24,'#5fb04a');rr(cx,250,181,120,1,'#2f6a2a');
-  Object.keys(G.RECIPES).forEach((k,i)=>{const n=S.inv[k]||0,x=258+i*28;IM(k,x,172,18,n?1:.35);TS('×'+n,x+9,198,'#fff6e4',7)});
-  if(!S.cooking.length)TS('Chạm chõ để nấu',200,144,'#fff6e4',9);
+  // kệ lá chuối: tối đa 4 món đang có (theo thứ tự công thức, sao cao trước), dư thì ghi "+n món"
+  const rk=Object.keys(G.RECIPES),dishes=Object.keys(S.inv).filter(id=>G.RECIPES[G.baseOf(id)]).sort((a,b)=>rk.indexOf(G.baseOf(a))-rk.indexOf(G.baseOf(b))||G.starOf(b)-G.starOf(a));
+  dishes.slice(0,4).forEach((id,i)=>{const x=252+i*30;IM(id,x,170,18);TS('×'+S.inv[id],x+9,198,'#fff6e4',7)});
+  if(dishes.length>4)TS('+'+(dishes.length-4)+' món',352,167,'#fff6e4',7);
+  if(!dishes.length)TS('Món nấu xong xếp ở đây',310,186,'#fff6e4',7);
+  TS(G.readyPots()?'Chạm chõ để thu món':S.cooking.length?'Đang nấu…':'Chạm chõ để nấu',200,144,'#fff6e4',9);
   G.drawDoor(46,188,'farm',46,196);
   G.P.draw(t)}};

@@ -132,6 +132,9 @@ Object.assign(PAINT,{
 });
 
 
+// Món nấu 2★ / 3★ (id+'_2', id+'_3'): vẽ món gốc rồi gắn 2–3 sao vàng ở mép trên
+Object.keys(G.RECIPES).forEach(k=>{if(!PAINT[k])return;[2,3].forEach(s=>{PAINT[k+'_'+s]=()=>{PAINT[k]();(s===2?[5,11]:[3,8,13]).forEach(x=>{[[0,-1],[-1,0],[1,0],[0,1]].forEach(([a,b])=>px(x+a,1+b,'#ffd23a'));px(x,1,'#fff6b0')})}})});
+
 // ---------- xuất ảnh ----------
 // build(w,h,fn): chạy fn vẽ lên lưới w×h rồi thêm viền đậm 1px → {w,h,o} (o = mảng màu (w+2)×(h+2)); xong trả lưới về 16×16
 const build=(w,h,fn)=>{const oN=N,oM=M;N=w;M=h;g=Array(N*M).fill(null);fn();

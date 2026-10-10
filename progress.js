@@ -3,7 +3,7 @@
 // Cấp 2, 3 (quán bình dân, nhà hàng) sẽ nối tiếp ở đây + POI_TIER trong core.js.
 G.PROG={
   // Xu cần để sửa xe đẩy. Cân theo mô phỏng nông trại (giá hạt, thời gian lớn, giá bán, 10 ô đầu game rồi mở thêm từng ô):
-  // người chơi cẩn thận đủ 1000 xu sau khoảng 3 phút, người chơi chậm khoảng 4–5 phút (ước lượng, chưa chơi thử). Muốn pha làm nông dài/ngắn hơn thì chỉnh số này.
+  // với thời gian lớn của cây hiện tại, người chơi trồng rau liên tục đủ 1000 xu sau khoảng 9–10 phút, người chơi thường 15–20 phút (ước lượng, chưa chơi thử; đơn đặt hàng ở Bếp có thể rút ngắn). Muốn pha làm nông dài/ngắn hơn thì chỉnh số này.
   stallCost:1000
 };
 
